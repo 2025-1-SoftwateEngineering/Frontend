@@ -1,7 +1,34 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ]
+  "compilerOptions": {
+    /* ── 빌드 타깃 ─────────────────────────────────────── */
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "useDefineForClassFields": true,
+
+    /* ── 모듈 ──────────────────────────────────────────── */
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    /* ── JSX ────────────────────────────────────────────── */
+    "jsx": "react-jsx",
+
+    /* ── 출력 (Vite가 직접 번들링하므로 emit 하지 않음) ── */
+    "noEmit": true,
+
+    /* ── 타입 검사 ──────────────────────────────────────── */
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+
+    /* ── 경로 별칭 (vite.config.ts의 @ alias와 동기화) ─── */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
