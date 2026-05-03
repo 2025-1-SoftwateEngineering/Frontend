@@ -1,7 +1,7 @@
 "# Frontend" 
 # Frontend
 
-# 📘 영단어 학습 웹 앱 (가칭)
+# 📘 VocaBuddy
 
 작심삼일을 방지하고 지속적인 영어 학습을 유도하기 위한  
 Gamification 기반 영단어 학습 웹 애플리케이션입니다.
