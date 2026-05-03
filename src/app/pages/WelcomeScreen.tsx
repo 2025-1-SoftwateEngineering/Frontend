@@ -46,7 +46,7 @@ export function WelcomeScreen() {
             style={{ width: 36, height: 36, background: '#B8D0FA' }}>
             <span style={{ fontSize: 18 }}>📖</span>
           </div>
-          <span style={{ fontWeight: 700, fontSize: 17, color: '#1c1c1c' }}>SCOI</span>
+          <span style={{ fontWeight: 700, fontSize: 17, color: '#1c1c1c' }}>VocaBuddy</span>
         </motion.div>
 
         <div className="flex-1 flex flex-col items-center justify-center px-8 z-10">

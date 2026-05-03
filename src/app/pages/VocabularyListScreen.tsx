@@ -7,23 +7,25 @@ import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 import { vocaApi } from '../../main/features/domain/voca/vocaApi';
 import type { VocaBook } from '../../main/features/domain/voca/types';
 
+const LEVEL_COLORS: Record<number, string> = {
+  1: '#B8D0FA',
+  2: '#DDDEA5',
+  3: '#EDE9BF',
+};
+
 export function VocabularyListScreen() {
   const { currentUser } = useAuth();
   const { getBookProgress } = useProgress();
   const navigate = useNavigate();
   const [books, setBooks] = useState<VocaBook[]>([]);
   const [loading, setLoading] = useState(true);
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const isAdmin = currentUser?.authorize === 'ROLE_ADMIN';
 
   useEffect(() => {
     vocaApi.getBooks().then(setBooks).finally(() => setLoading(false));
   }, []);
 
-  const categoryColors: Record<string, string> = {
-    '동사': '#B8D0FA',
-    '동사/명사': '#DDDEA5',
-    '비즈니스': '#EDE9BF',
-  };
+  const totalWords = books.reduce((a, b) => a + b.words.length, 0);
 
   return (
     <div className="flex flex-col pb-4" style={{ minHeight: '100%', background: '#f8f9ff' }}>
@@ -54,7 +56,7 @@ export function VocabularyListScreen() {
           </button>
         )}
         <p style={{ fontSize: 13, color: '#737373', marginTop: 4 }}>
-          총 {books.reduce((a, b) => a + b.words.length, 0)}개의 TOEIC 단어 수록
+          총 {totalWords}개의 TOEIC 단어 수록
         </p>
       </div>
 
@@ -65,12 +67,15 @@ export function VocabularyListScreen() {
           ))
         ) : (
           books.map((book, i) => {
-            const { learnedCount, lastScore } = getBookProgress(book.id);
-            const progress = Math.round((learnedCount / book.words.length) * 100);
+            const { learnedCount, lastScore } = getBookProgress(book.voca_id);
+            const progress = book.words.length > 0
+              ? Math.round((learnedCount / book.words.length) * 100)
+              : 0;
+            const levelColor = LEVEL_COLORS[book.level] || '#f3f3f5';
 
             return (
               <motion.div
-                key={book.id}
+                key={book.voca_id}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
@@ -80,9 +85,9 @@ export function VocabularyListScreen() {
                 <div className="flex items-start justify-between mb-2">
                   <span
                     className="px-2.5 py-1 rounded-lg"
-                    style={{ fontSize: 11, fontWeight: 600, background: categoryColors[book.category] || '#f3f3f5', color: '#1c1c1c' }}
+                    style={{ fontSize: 11, fontWeight: 600, background: levelColor, color: '#1c1c1c' }}
                   >
-                    {book.category}
+                    Lv.{book.level}
                   </span>
                   {lastScore !== null && (
                     <span style={{ fontSize: 12, color: '#94B9F3', fontWeight: 600 }}>
@@ -91,8 +96,12 @@ export function VocabularyListScreen() {
                   )}
                 </div>
 
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1c1c1c', marginBottom: 3 }}>{book.title}</h3>
-                <p style={{ fontSize: 12, color: '#737373', marginBottom: 12 }}>{book.description}</p>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1c1c1c', marginBottom: 3 }}>
+                  레벨 {book.level} 단어장 #{book.voca_id}
+                </h3>
+                <p style={{ fontSize: 12, color: '#737373', marginBottom: 12 }}>
+                  완료 보상 🪙 {book.solved_coin} 코인 · {book.words.length}개 단어
+                </p>
 
                 <div className="mb-1 flex items-center justify-between">
                   <span style={{ fontSize: 12, color: '#737373' }}>암기 진도</span>
@@ -112,7 +121,7 @@ export function VocabularyListScreen() {
                 <div className="flex items-center gap-2">
                   <span style={{ fontSize: 12, color: '#737373' }}>📚 {book.words.length}개 단어</span>
                   <button
-                    onClick={() => navigate(`/vocabulary/${book.id}`)}
+                    onClick={() => navigate(`/vocabulary/${book.voca_id}`)}
                     className="ml-auto flex items-center gap-1 px-4 py-2 rounded-xl active:scale-95 transition-transform"
                     style={{ background: '#B8D0FA', color: '#1c1c1c', fontSize: 13, fontWeight: 600 }}
                   >

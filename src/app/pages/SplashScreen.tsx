@@ -41,7 +41,7 @@ export function SplashScreen() {
             className="flex flex-col items-center"
           >
             <span style={{ fontSize: 28, fontWeight: 700, color: '#fff', letterSpacing: '-0.5px' }}>
-              SCOI
+              VocaBuddy
             </span>
             <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 2 }}>
               영단어 학습 코치

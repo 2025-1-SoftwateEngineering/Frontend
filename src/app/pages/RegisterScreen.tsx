@@ -1,32 +1,22 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ChevronLeft, Eye, EyeOff, Camera } from 'lucide-react';
+import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { MobileLayout } from '../components/MobileLayout';
 
 export function RegisterScreen() {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [pwCheck, setPwCheck] = useState('');
   const [showPw, setShowPw] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setProfileImage(reader.result as string);
-    reader.readAsDataURL(file);
-  };
 
   const handleRegister = async () => {
     setError('');
@@ -38,7 +28,7 @@ export function RegisterScreen() {
 
     setLoading(true);
     try {
-      await register({ email: email.trim(), nickname: nickname.trim(), password, profileImage, isAdmin });
+      await register({ email: email.trim(), nickname: nickname.trim(), password, isAdmin });
       if (isAdmin) {
         alert('관리자 가입 요청이 전송되었습니다. 승인 후 로그인하실 수 있습니다.');
         navigate('/login');
@@ -63,7 +53,7 @@ export function RegisterScreen() {
     <MobileLayout>
       <div className="flex-1 flex flex-col overflow-y-auto" style={{ background: '#fff' }}>
         <div className="flex items-center px-4 pt-12 pb-4 flex-shrink-0">
-          <button onClick={() => navigate('/login')} style={{ color: '#737373', background: 'none', border: 'none' }}>
+          <button type="button" onClick={() => navigate('/login')} aria-label="Go back to login" className="text-gray-500 bg-none border-none">
             <ChevronLeft size={26} />
           </button>
         </div>
@@ -78,23 +68,16 @@ export function RegisterScreen() {
             <p style={{ fontSize: 14, color: '#737373' }}>정보를 입력하고 학습을 시작하세요</p>
           </div>
 
+          {/* 이니셜 아바타 미리보기 */}
           <div className="flex justify-center mb-6">
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="relative flex items-center justify-center rounded-full overflow-hidden"
-              style={{ width: 90, height: 90, background: '#EDE9BF', border: '3px solid #B8D0FA' }}
+            <div
+              className="rounded-full flex items-center justify-center"
+              style={{ width: 90, height: 90, background: '#B8D0FA', border: '3px solid #94B9F3' }}
             >
-              {profileImage ? (
-                <img src={profileImage} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <span style={{ fontSize: 36 }}>👤</span>
-              )}
-              <div className="absolute bottom-0 right-0 rounded-full flex items-center justify-center"
-                style={{ width: 26, height: 26, background: '#B8D0FA' }}>
-                <Camera size={13} color="#1c1c1c" />
-              </div>
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+              <span style={{ fontSize: 36, fontWeight: 700, color: '#fff' }}>
+                {nickname.trim() ? nickname.trim().charAt(0).toUpperCase() : '👤'}
+              </span>
+            </div>
           </div>
 
           <div className="flex flex-col gap-4">
@@ -141,7 +124,7 @@ export function RegisterScreen() {
               style={{ width: 18, height: 18, marginTop: 2, accentColor: '#94B9F3', flexShrink: 0 }}
             />
             <label htmlFor="admin-check" style={{ fontSize: 14, color: '#1c1c1c', lineHeight: 1.6, cursor: 'pointer' }}>
-              <span style={{ fontWeight: 600 }}>관리자로 가입</span><br />
+              <span style={{ fontWeight: 600 }}>관리자로 가입 (ROLE_ADMIN)</span><br />
               <span style={{ fontSize: 12, color: '#737373' }}>
                 체크 시 관리자 승인 요청이 전송됩니다. 단어장 생성·편집 권한이 부여됩니다.
               </span>

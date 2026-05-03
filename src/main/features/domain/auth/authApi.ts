@@ -18,11 +18,18 @@ export const authApi = {
     if (MOCK_USERS.some((u) => u.member.email === req.email)) {
       throw new Error('이미 사용중인 이메일입니다.');
     }
+    const now = new Date().toISOString();
     const newMember: Member = {
-      id: Date.now(), email: req.email, nickname: req.nickname,
-      role: req.isAdmin ? 'ADMIN' : 'USER',
-      profileImage: req.profileImage, profileBackground: null, profileFrame: null,
-      level: 1, exp: 0,
+      member_id: Date.now(),
+      email: req.email,
+      nickname: req.nickname,
+      authorize: req.isAdmin ? 'ROLE_ADMIN' : 'ROLE_USER',
+      login_at: now,
+      streak: 0,
+      coin: 0,
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
     };
     MOCK_USERS.push({ password: req.password, member: newMember });
   },

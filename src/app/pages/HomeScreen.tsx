@@ -16,7 +16,7 @@ export function HomeScreen() {
   const totalBooks = 3;
   const totalTested = Object.values(progress).filter((p) => p.testResults.length > 0).length;
   const totalLearned = Object.values(progress).reduce((acc, p) => acc + p.learnedWordIds.length, 0);
-  const streak = 5;
+  const streak = currentUser?.streak ?? 0;
   const today = new Date();
   const dateStr = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
 
@@ -36,7 +36,7 @@ export function HomeScreen() {
             {greeting}, {currentUser?.nickname}님! 👋
           </h1>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>
-            {currentUser?.role === 'ADMIN' ? '🛡️ 관리자 모드' : '오늘도 영단어 학습을 시작해 봐요'}
+            {currentUser?.authorize === 'ROLE_ADMIN' ? '🛡️ 관리자 모드' : '오늘도 영단어 학습을 시작해 봐요'}
           </p>
         </motion.div>
 

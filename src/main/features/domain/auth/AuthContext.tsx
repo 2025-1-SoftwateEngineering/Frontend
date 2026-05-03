@@ -16,7 +16,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const STORAGE_KEY = 'scoi_auth_user';
+const STORAGE_KEY = 'vocabuddy_auth_user';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<Member | null>(null);
@@ -48,14 +48,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateUser = useCallback(async (data: Partial<Member>) => {
     if (!currentUser) return;
-    const updated = await memberApi.updateMember(currentUser.id, data);
+    const updated = await memberApi.updateMember(currentUser.member_id, data);
     setCurrentUser(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   }, [currentUser]);
 
   const deleteAccount = useCallback(async () => {
     if (!currentUser) return;
-    await memberApi.deleteMember(currentUser.id);
+    await memberApi.deleteMember(currentUser.member_id);
     setCurrentUser(null);
     localStorage.removeItem(STORAGE_KEY);
   }, [currentUser]);

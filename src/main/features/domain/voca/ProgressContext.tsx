@@ -12,8 +12,8 @@ interface ProgressContextValue {
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
 
-const STORAGE_KEY = 'scoi_progress';
-const EXP_STORAGE_KEY = 'scoi_exp';
+const STORAGE_KEY = 'vocabuddy_progress';
+const EXP_STORAGE_KEY = 'vocabuddy_exp';
 
 function loadProgress(): AllProgress {
   try {

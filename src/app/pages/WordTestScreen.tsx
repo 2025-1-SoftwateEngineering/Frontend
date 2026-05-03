@@ -6,6 +6,7 @@ import { vocaApi } from '../../main/features/domain/voca/vocaApi';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 import type { VocaBook, Word } from '../../main/features/domain/voca/types';
 import { MobileLayout } from '../components/MobileLayout';
+import styles from './WordTestScreen.module.css';
 
 type Phase = 'test' | 'result';
 
@@ -39,23 +40,9 @@ export function WordTestScreen() {
 
   const current = words[idx];
 
-  const maskExample = (example: string, word: string): { before: string; placeholder: string | null; after: string } => {
-    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escaped}\\w*)`, 'i');
-    const match = example.match(regex);
-    if (!match || match.index === undefined) return { before: example, placeholder: null, after: '' };
-    return {
-      before: example.slice(0, match.index),
-      placeholder: '{단어}',
-      after: example.slice(match.index + match[0].length),
-    };
-  };
-
-  const exampleParts = current?.example ? maskExample(current.example, current.word) : null;
-
   const handleCheck = () => {
     if (!current || checked) return;
-    const correct = input.trim().toLowerCase() === current.word.toLowerCase();
+    const correct = input.trim().toLowerCase() === current.english_word.toLowerCase();
     setIsCorrect(correct);
     setChecked(true);
   };
@@ -97,7 +84,7 @@ export function WordTestScreen() {
       <MobileLayout>
         <div className="flex flex-col" style={{ height: '100dvh', background: '#f8f9ff' }}>
           <div className="px-4 pt-12 pb-3 flex items-center" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
-            <button onClick={() => navigate(`/vocabulary/${bookId}`)} style={{ color: '#737373', background: 'none', border: 'none' }}>
+            <button type="button" onClick={() => navigate(`/vocabulary/${bookId}`)} className={styles.iconButton} title="뒤로 가기">
               <ChevronLeft size={26} />
             </button>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c', marginLeft: 8 }}>테스트 완료</h1>
@@ -134,8 +121,8 @@ export function WordTestScreen() {
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#d4183d', marginBottom: 8 }}>틀린 단어 복습</p>
                 <div className="flex flex-col gap-2">
                   {words.filter((_, i) => !scores[i]).map((w) => (
-                    <div key={w.id} className="rounded-xl p-3 flex justify-between" style={{ background: '#fff3f3' }}>
-                      <span style={{ fontWeight: 600, color: '#1c1c1c' }}>{w.word}</span>
+                    <div key={w.word_id} className="rounded-xl p-3 flex justify-between" style={{ background: '#fff3f3' }}>
+                      <span style={{ fontWeight: 600, color: '#1c1c1c' }}>{w.english_word}</span>
                       <span style={{ color: '#737373', fontSize: 13 }}>{w.meaning}</span>
                     </div>
                   ))}
@@ -171,7 +158,7 @@ export function WordTestScreen() {
         {/* Header */}
         <div className="flex-shrink-0 px-4 pt-12 pb-4" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
           <div className="flex items-center gap-2 mb-3">
-            <button onClick={() => navigate(`/vocabulary/${bookId}`)} style={{ color: '#737373', background: 'none', border: 'none' }}>
+            <button type="button" onClick={() => navigate(`/vocabulary/${bookId}`)} className={styles.iconButton} title="뒤로 가기">
               <ChevronLeft size={26} />
             </button>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c' }}>단어 테스트</h1>
@@ -198,23 +185,6 @@ export function WordTestScreen() {
             >
               <p style={{ fontSize: 12, color: '#94B9F3', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>뜻</p>
               <p style={{ fontSize: 22, fontWeight: 700, color: '#1c1c1c', lineHeight: 1.4 }}>{current?.meaning}</p>
-              {current?.example && (
-                <p style={{ fontSize: 13, color: '#9ca3af', fontStyle: 'italic', lineHeight: 1.6 }}>
-                  {!checked && exampleParts?.placeholder != null ? (
-                    <>
-                      &ldquo;{exampleParts.before}
-                      <span style={{
-                        display: 'inline-block', background: '#B8D0FA', color: '#1c1c1c',
-                        borderRadius: 6, padding: '0 6px', fontStyle: 'normal', fontWeight: 700,
-                        fontSize: 12, letterSpacing: '0.04em', verticalAlign: 'middle', margin: '0 2px',
-                      }}>( ? )</span>
-                      {exampleParts.after}&rdquo;
-                    </>
-                  ) : (
-                    <>&ldquo;{current.example}&rdquo;</>
-                  )}
-                </p>
-              )}
             </motion.div>
           </AnimatePresence>
 
@@ -243,7 +213,7 @@ export function WordTestScreen() {
             {checked && !isCorrect && (
               <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                 style={{ fontSize: 14, color: '#94B9F3', marginTop: 8, fontWeight: 600 }}>
-                정답: <span style={{ color: '#1c1c1c' }}>{current?.word}</span>
+                정답: <span style={{ color: '#1c1c1c' }}>{current?.english_word}</span>
               </motion.p>
             )}
             {checked && isCorrect && (

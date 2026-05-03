@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { Settings, Shield, Star, BookOpen, Target, Flame } from 'lucide-react';
+import { Settings, Shield, Star, BookOpen, Target, Coins } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 
@@ -28,7 +28,8 @@ export function ProfileScreen() {
     .flatMap((p) => p.testResults.map((t) => t.score))
     .reduce((a, b) => Math.max(a, b), 0);
 
-  const avatarBg = currentUser.profileBackground ?? '#B8D0FA';
+  // 닉네임 이니셜 아바타
+  const initial = currentUser.nickname.charAt(0).toUpperCase();
 
   const handleLogout = () => {
     logout();
@@ -47,21 +48,18 @@ export function ProfileScreen() {
 
         <div className="relative flex items-start justify-between">
           <div className="flex items-center gap-4">
+            {/* 이니셜 아바타 (DB에 profileImage 없음) */}
             <div
-              className="rounded-full flex items-center justify-center overflow-hidden"
-              style={{ width: 72, height: 72, background: avatarBg, border: '3px solid rgba(255,255,255,0.7)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', flexShrink: 0 }}
+              className="rounded-full flex items-center justify-center"
+              style={{ width: 72, height: 72, background: '#fff', border: '3px solid rgba(255,255,255,0.7)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', flexShrink: 0 }}
             >
-              {currentUser.profileImage ? (
-                <img src={currentUser.profileImage} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <span style={{ fontSize: 32 }}>👤</span>
-              )}
+              <span style={{ fontSize: 28, fontWeight: 700, color: '#94B9F3' }}>{initial}</span>
             </div>
 
             <div>
               <div className="flex items-center gap-2">
                 <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{currentUser.nickname}</h1>
-                {currentUser.role === 'ADMIN' && (
+                {currentUser.authorize === 'ROLE_ADMIN' && (
                   <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full"
                     style={{ background: 'rgba(255,255,255,0.25)', fontSize: 11, color: '#fff', fontWeight: 600 }}>
                     <Shield size={10} />
@@ -77,6 +75,8 @@ export function ProfileScreen() {
           </div>
 
           <button
+            type="button"
+            title="프로필 편집"
             onClick={() => navigate('/profile/edit')}
             className="flex items-center justify-center rounded-xl active:scale-95 transition-transform"
             style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.25)', border: 'none' }}
@@ -85,7 +85,25 @@ export function ProfileScreen() {
           </button>
         </div>
 
-        <div className="mt-5 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.2)' }}>
+        {/* streak & coin */}
+        <div className="flex gap-3 mt-4">
+          <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.2)' }}>
+            <span style={{ fontSize: 16 }}>🔥</span>
+            <div>
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.75)' }}>연속 학습</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{currentUser.streak}일</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.2)' }}>
+            <span style={{ fontSize: 16 }}>🪙</span>
+            <div>
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.75)' }}>보유 코인</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{currentUser.coin.toLocaleString()}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.2)' }}>
           <div className="flex justify-between items-center mb-2">
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>경험치</span>
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)' }}>{expInLevel} / {expToNext} XP</span>
@@ -137,7 +155,7 @@ export function ProfileScreen() {
             {[
               { emoji: '📚', label: '첫 학습', achieved: totalLearned > 0 },
               { emoji: '✏️', label: '첫 테스트', achieved: totalTests > 0 },
-              { emoji: '🔥', label: '연속 5일', achieved: false },
+              { emoji: '🔥', label: '연속 5일', achieved: currentUser.streak >= 5 },
               { emoji: '💯', label: '100점 달성', achieved: bestScore >= 100 },
               { emoji: '🌟', label: 'Lv.5 달성', achieved: level >= 5 },
             ].map((ach) => (
