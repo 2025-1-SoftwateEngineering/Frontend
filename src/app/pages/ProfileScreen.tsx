@@ -76,7 +76,7 @@ export function ProfileScreen() {
 
           <button
             type="button"
-            title="프로필 편집"
+            aria-label="프로필 편집"
             onClick={() => navigate('/profile/edit')}
             className="flex items-center justify-center rounded-xl active:scale-95 transition-transform"
             style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.25)', border: 'none' }}
@@ -177,6 +177,7 @@ export function ProfileScreen() {
         </motion.div>
 
         <motion.button
+          type="button"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
@@ -188,6 +189,7 @@ export function ProfileScreen() {
         </motion.button>
 
         <motion.button
+          type="button"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}

@@ -22,6 +22,7 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
 
     /* ── 경로 별칭 (vite.config.ts의 @ alias와 동기화) ─── */
     "baseUrl": ".",

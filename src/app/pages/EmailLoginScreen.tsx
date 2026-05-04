@@ -41,7 +41,7 @@ export function EmailLoginScreen() {
     <MobileLayout>
       <div className="flex-1 flex flex-col" style={{ background: '#fff' }}>
         <div className="flex items-center px-4 pt-12 pb-4">
-          <button onClick={() => navigate('/login')} style={{ color: '#737373', background: 'none', border: 'none' }}>
+          <button type="button" onClick={() => navigate('/login')} className="text-gray-500 bg-transparent border-none" title="뒤로 가기">
             <ChevronLeft size={26} />
           </button>
         </div>

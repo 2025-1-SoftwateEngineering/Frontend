@@ -6,7 +6,6 @@ import { vocaApi } from '../../main/features/domain/voca/vocaApi';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 import type { VocaBook, Word } from '../../main/features/domain/voca/types';
 import { MobileLayout } from '../components/MobileLayout';
-import styles from './WordTestScreen.module.css';
 
 type Phase = 'test' | 'result';
 
@@ -84,7 +83,7 @@ export function WordTestScreen() {
       <MobileLayout>
         <div className="flex flex-col" style={{ height: '100dvh', background: '#f8f9ff' }}>
           <div className="px-4 pt-12 pb-3 flex items-center" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
-            <button type="button" onClick={() => navigate(`/vocabulary/${bookId}`)} className={styles.iconButton} title="뒤로 가기">
+            <button type="button" onClick={() => navigate(`/vocabulary/${bookId}`)} title="뒤로 가기" style={{ color: '#737373', background: 'none', border: 'none' }}>
               <ChevronLeft size={26} />
             </button>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c', marginLeft: 8 }}>테스트 완료</h1>
@@ -158,7 +157,7 @@ export function WordTestScreen() {
         {/* Header */}
         <div className="flex-shrink-0 px-4 pt-12 pb-4" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
           <div className="flex items-center gap-2 mb-3">
-            <button type="button" onClick={() => navigate(`/vocabulary/${bookId}`)} className={styles.iconButton} title="뒤로 가기">
+            <button type="button" aria-label="Back" onClick={() => navigate(`/vocabulary/${bookId}`)} className="text-[#737373] bg-transparent border-none">
               <ChevronLeft size={26} />
             </button>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c' }}>단어 테스트</h1>

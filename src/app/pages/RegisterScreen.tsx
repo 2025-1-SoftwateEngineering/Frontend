@@ -53,7 +53,12 @@ export function RegisterScreen() {
     <MobileLayout>
       <div className="flex-1 flex flex-col overflow-y-auto" style={{ background: '#fff' }}>
         <div className="flex items-center px-4 pt-12 pb-4 flex-shrink-0">
-          <button type="button" onClick={() => navigate('/login')} aria-label="Go back to login" className="text-gray-500 bg-none border-none">
+          <button
+            type="button"
+            aria-label="뒤로가기"
+            onClick={() => navigate('/login')}
+            className="text-[#737373] bg-transparent border-none"
+          >
             <ChevronLeft size={26} />
           </button>
         </div>

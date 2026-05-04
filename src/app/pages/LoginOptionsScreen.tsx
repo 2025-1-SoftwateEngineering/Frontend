@@ -10,7 +10,7 @@ export function LoginOptionsScreen() {
     <MobileLayout>
       <div className="flex-1 flex flex-col" style={{ background: '#fff' }}>
         <div className="flex items-center px-4 pt-12 pb-6">
-          <button onClick={() => navigate('/welcome')} style={{ color: '#737373', background: 'none', border: 'none' }}>
+          <button type="button" onClick={() => navigate('/welcome')} className="text-gray-500 bg-transparent border-none" aria-label="뒤로 가기">
             <ChevronLeft size={26} />
           </button>
         </div>

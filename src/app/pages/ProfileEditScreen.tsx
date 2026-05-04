@@ -53,13 +53,7 @@ export function ProfileEditScreen() {
       <div className="relative flex flex-col" style={{ height: '100dvh', background: '#f8f9ff' }}>
         {/* Header */}
         <div className="flex-shrink-0 flex items-center gap-2 px-4 pt-12 pb-4" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
-          <button
-            type="button"
-            onClick={() => navigate('/profile')}
-            className="text-[#737373] bg-transparent border-none"
-            title="뒤로 가기"
-            aria-label="뒤로 가기"
-          >
+          <button type="button" onClick={() => navigate('/profile')} style={{ color: '#737373', background: 'none', border: 'none' }} title="뒤로 가기" aria-label="뒤로 가기">
             <ChevronLeft size={26} />
           </button>
           <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c' }}>프로필 편집</h1>
@@ -88,7 +82,7 @@ export function ProfileEditScreen() {
 
             <div className="w-full">
               <label style={{ fontSize: 13, color: '#737373', display: 'block', marginBottom: 6 }}>이메일 (변경 불가)</label>
-              <input value={currentUser.email} disabled title="사용자 이메일 (변경 불가)" className="email-input-disabled" style={inputStyle} />
+              <input value={currentUser.email} disabled placeholder="이메일" title="이메일" style={{ ...inputStyle, background: '#f0f0f0', color: '#737373' }} />
             </div>
           </div>
 

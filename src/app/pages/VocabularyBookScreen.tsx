@@ -7,7 +7,6 @@ import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 import { vocaApi } from '../../main/features/domain/voca/vocaApi';
 import type { VocaBook } from '../../main/features/domain/voca/types';
 import { MobileLayout } from '../components/MobileLayout';
-import styles from './VocabularyBookScreen.module.css';
 
 const PAGE_SIZE = 10;
 
@@ -58,12 +57,7 @@ export function VocabularyBookScreen() {
         {/* Header */}
         <div className="flex-shrink-0 px-4 pt-12 pb-4" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
           <div className="flex items-center gap-2 mb-3">
-            <button
-              type="button"
-              onClick={() => navigate('/vocabulary')}
-              className={styles.backButton}
-              title="뒤로 가기"
-            >
+            <button type="button" onClick={() => navigate('/vocabulary')} className="text-gray-500 bg-transparent border-0" aria-label="Back">
               <ChevronLeft size={26} />
             </button>
             <div className="flex-1 min-w-0">
