@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Settings, Shield, Star, BookOpen, Target, Flame } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
+import { useStreak, toDateStr } from '../../main/features/domain/streak/StreakContext';
 
 const LEVEL_TITLES: Record<number, string> = {
   1: '씨앗', 2: '새싹', 3: '초보자', 4: '학습자', 5: '탐구자',
@@ -16,6 +17,7 @@ function getLevelTitle(level: number) {
 export function ProfileScreen() {
   const { currentUser, logout } = useAuth();
   const { totalExp, level, progress } = useProgress();
+  const { streakData } = useStreak();
   const navigate = useNavigate();
 
   if (!currentUser) return null;
@@ -125,6 +127,61 @@ export function ProfileScreen() {
           ))}
         </div>
 
+        {/* Streak 카드 */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="rounded-2xl p-4"
+          style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Flame size={18} color="#FF6B35" />
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#1c1c1c' }}>연속 학습</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="rounded-xl p-3 text-center" style={{ background: '#FFF3F0' }}>
+              <p style={{ fontSize: 26, fontWeight: 800, color: '#FF6B35' }}>{streakData.currentStreak}일</p>
+              <p style={{ fontSize: 11, color: '#737373', marginTop: 2 }}>🔥 현재 연속</p>
+            </div>
+            <div className="rounded-xl p-3 text-center" style={{ background: '#f8f9ff' }}>
+              <p style={{ fontSize: 26, fontWeight: 800, color: '#94B9F3' }}>{streakData.longestStreak}일</p>
+              <p style={{ fontSize: 11, color: '#737373', marginTop: 2 }}>🏆 최장 기록</p>
+            </div>
+          </div>
+          {/* 주간 달력 */}
+          <div>
+            <p style={{ fontSize: 12, color: '#737373', marginBottom: 8, fontWeight: 600 }}>최근 7일</p>
+            <div className="flex justify-between">
+              {Array.from({ length: 7 }, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (6 - i));
+                const dateStr = toDateStr(d);
+                const done = streakData.studyHistory.includes(dateStr);
+                const isToday = i === 6;
+                return (
+                  <div key={dateStr} className="flex flex-col items-center gap-1">
+                    <span style={{ fontSize: 10, color: isToday ? '#94B9F3' : '#aaa', fontWeight: isToday ? 700 : 400 }}>
+                      {['일','월','화','수','목','금','토'][d.getDay()]}
+                    </span>
+                    <div
+                      className="flex items-center justify-center rounded-full"
+                      style={{
+                        width: 32, height: 32,
+                        background: done ? '#FF6B35' : '#f0f0f0',
+                        border: isToday ? '2px solid #94B9F3' : '2px solid transparent',
+                      }}
+                    >
+                      <span style={{ fontSize: 14 }}>{done ? '●' : '○'}</span>
+                    </div>
+                    <span style={{ fontSize: 9, color: '#bbb' }}>{d.getDate()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -137,7 +194,7 @@ export function ProfileScreen() {
             {[
               { emoji: '📚', label: '첫 학습', achieved: totalLearned > 0 },
               { emoji: '✏️', label: '첫 테스트', achieved: totalTests > 0 },
-              { emoji: '🔥', label: '연속 5일', achieved: false },
+              { emoji: '🔥', label: '연속 5일', achieved: streakData.longestStreak >= 5 },
               { emoji: '💯', label: '100점 달성', achieved: bestScore >= 100 },
               { emoji: '🌟', label: 'Lv.5 달성', achieved: level >= 5 },
             ].map((ach) => (

@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { BookOpen, Target, Flame, TrendingUp, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
+import { useStreak } from '../../main/features/domain/streak/StreakContext';
 
 const GREETINGS = ['안녕하세요', '반갑습니다', '오늘도 화이팅'];
 
@@ -11,12 +12,13 @@ export function HomeScreen() {
   const { totalExp, level, progress } = useProgress();
   const navigate = useNavigate();
 
+  const { streakData } = useStreak();
   const greeting = GREETINGS[new Date().getHours() % GREETINGS.length];
   const expInLevel = totalExp % 100;
   const totalBooks = 3;
   const totalTested = Object.values(progress).filter((p) => p.testResults.length > 0).length;
   const totalLearned = Object.values(progress).reduce((acc, p) => acc + p.learnedWordIds.length, 0);
-  const streak = 5;
+  const streak = streakData.currentStreak;
   const today = new Date();
   const dateStr = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
 
@@ -87,6 +89,68 @@ export function HomeScreen() {
             </motion.div>
           ))}
         </div>
+
+        {/* Streak 위젯 */}
+        {(() => {
+          const todayStr = (() => {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+          })();
+          const todayDone = streakData.lastStudyDate === todayStr;
+          const nextMilestone = Math.ceil((streak + 1) / 7) * 7;
+          const milestoneProgress = streak % 7;
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="rounded-2xl p-4"
+              style={{
+                background: '#fff',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                border: !todayDone ? '2px solid #DDDEA5' : '2px solid transparent',
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Flame size={20} color="#FF6B35" />
+                  <span style={{ fontSize: 15, fontWeight: 700, color: '#1c1c1c' }}>
+                    {streak > 0 ? `${streak}일 연속 학습 중!` : '오늘 첫 학습을 시작해보세요!'}
+                  </span>
+                </div>
+                <span
+                  className="px-2 py-0.5 rounded-full"
+                  style={{
+                    fontSize: 11, fontWeight: 600,
+                    background: todayDone ? '#B8D0FA' : '#FFF3CD',
+                    color: todayDone ? '#1c1c1c' : '#776A77',
+                  }}
+                >
+                  {todayDone ? '오늘 완료 ✓' : '미완료'}
+                </span>
+              </div>
+              {streak > 0 && (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div style={{ flex: 1, background: '#f0f0f0', borderRadius: 99, height: 8, overflow: 'hidden' }}>
+                      <motion.div
+                        animate={{ width: `${(milestoneProgress / 7) * 100}%` }}
+                        style={{ height: '100%', background: '#FF6B35', borderRadius: 99 }}
+                        transition={{ duration: 0.6 }}
+                      />
+                    </div>
+                    <span style={{ fontSize: 11, color: '#737373', flexShrink: 0 }}>
+                      {milestoneProgress} / 7일
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 12, color: '#737373' }}>
+                    다음 마일스톤({nextMilestone}일)까지 <span style={{ fontWeight: 600, color: '#FF6B35' }}>{nextMilestone - streak}일</span> 남음
+                  </p>
+                </>
+              )}
+            </motion.div>
+          );
+        })()}
 
         {/* Quick action */}
         <motion.div

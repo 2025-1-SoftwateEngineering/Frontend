@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, CheckCircle, XCircle } from 'lucide-react';
 import { vocaApi } from '../../main/features/domain/voca/vocaApi';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
+import { useStreak } from '../../main/features/domain/streak/StreakContext';
+import type { StreakResult } from '../../main/features/domain/streak/StreakContext';
+import { StreakPopup } from '../components/StreakPopup';
 import type { VocaBook, Word } from '../../main/features/domain/voca/types';
 import { MobileLayout } from '../components/MobileLayout';
 
@@ -13,6 +16,7 @@ export function WordTestScreen() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
   const { addTestResult } = useProgress();
+  const { completeStudy } = useStreak();
 
   const [book, setBook] = useState<VocaBook | null>(null);
   const [words, setWords] = useState<Word[]>([]);
@@ -22,6 +26,7 @@ export function WordTestScreen() {
   const [isCorrect, setIsCorrect] = useState(false);
   const [scores, setScores] = useState<boolean[]>([]);
   const [phase, setPhase] = useState<Phase>('test');
+  const [streakResult, setStreakResult] = useState<StreakResult | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -74,6 +79,8 @@ export function WordTestScreen() {
       const score = Math.round((newScores.filter(Boolean).length / words.length) * 100);
       const xpGain = newScores.filter(Boolean).length * 10;
       addTestResult(Number(bookId), { score, total: words.length, date: new Date().toISOString() }, xpGain);
+      const result = completeStudy();
+      if (!result.isAlreadyDone) setStreakResult(result);
     }
   };
 
@@ -95,6 +102,7 @@ export function WordTestScreen() {
 
     return (
       <MobileLayout>
+        <StreakPopup result={streakResult} onClose={() => setStreakResult(null)} />
         <div className="flex flex-col" style={{ height: '100dvh', background: '#f8f9ff' }}>
           <div className="px-4 pt-12 pb-3 flex items-center" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
             <button onClick={() => navigate(`/vocabulary/${bookId}`)} style={{ color: '#737373', background: 'none', border: 'none' }}>
