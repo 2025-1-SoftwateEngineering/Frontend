@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { ShoppingBag } from 'lucide-react';
+import { useAuth } from '../../main/features/domain/auth/AuthContext';
 
 const CATEGORIES = [
   { label: '미니게임 아이템', icon: '🎮', items: ['힌트 카드', '시간 연장', '단어 공개'] },
@@ -9,12 +10,27 @@ const CATEGORIES = [
 ];
 
 export function ShopScreen() {
+  const { currentUser } = useAuth();
+
   return (
     <div className="flex flex-col pb-4" style={{ minHeight: '100%', background: '#f8f9ff' }}>
       <div className="px-5 pt-14 pb-5" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
         <div className="flex items-center gap-2">
           <ShoppingBag size={22} color="#94B9F3" />
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1c1c1c' }}>상점</h1>
+
+          {/* 보유 코인 - 우상단 방향 */}
+          {currentUser && (
+            <div
+              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+              style={{ background: '#FFF8E1', border: '1px solid #FFE082' }}
+            >
+              <span style={{ fontSize: 15 }}>🪙</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#B8860B' }}>
+                {currentUser.coin.toLocaleString()}
+              </span>
+            </div>
+          )}
         </div>
         <p style={{ fontSize: 13, color: '#737373', marginTop: 4 }}>학습 포인트로 특별한 아이템을 구매하세요</p>
       </div>
