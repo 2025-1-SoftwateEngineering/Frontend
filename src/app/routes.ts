@@ -17,6 +17,7 @@ import { WordMemorizeScreen } from './pages/WordMemorizeScreen';
 import { VocabularyEditScreen } from './pages/VocabularyEditScreen';
 import { ProfileScreen } from './pages/ProfileScreen';
 import { ProfileEditScreen } from './pages/ProfileEditScreen';
+import FriendProfilePage from './pages/FriendProfilePage.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { path: '/vocabulary/:bookId/memorize', Component: WordMemorizeScreen },
       { path: '/vocabulary/:bookId/edit', Component: VocabularyEditScreen },
       { path: '/profile/edit', Component: ProfileEditScreen },
+      { path: '/friends/:memberId', Component: FriendProfilePage },
     ],
   },
 ]);
