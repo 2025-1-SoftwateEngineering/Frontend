@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react";
 import { vocaApi } from "../../main/features/domain/voca/vocaApi";
 import { useProgress } from "../../main/features/domain/voca/ProgressContext";
+import { useStreak } from "../../main/features/domain/streak/StreakContext";
+import type { StreakResult } from "../../main/features/domain/streak/StreakContext";
+import { StreakPopup } from "../components/StreakPopup";
 import type {
   VocaBook,
   Word,
@@ -14,12 +17,14 @@ export function WordMemorizeScreen() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
   const { markLearned, progress } = useProgress();
+  const { completeStudy } = useStreak();
 
   const [book, setBook] = useState<VocaBook | null>(null);
   const [words, setWords] = useState<Word[]>([]);
   const [idx, setIdx] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [done, setDone] = useState(false);
+  const [streakResult, setStreakResult] = useState<StreakResult | null>(null);
 
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -45,6 +50,8 @@ export function WordMemorizeScreen() {
     } else {
       markLearned(Number(bookId), current.word_id);
       setDone(true);
+      const result = completeStudy();
+      if (!result.isAlreadyDone) setStreakResult(result);
     }
   };
 
@@ -92,6 +99,7 @@ export function WordMemorizeScreen() {
   if (done) {
     return (
       <MobileLayout>
+        <StreakPopup result={streakResult} onClose={() => setStreakResult(null)} />
         <div
           className="flex flex-col"
           style={{ height: "100dvh", background: "#f8f9ff" }}
