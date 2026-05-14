@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { Settings, Shield, Star, BookOpen, Target, Coins } from 'lucide-react';
+import { Settings, Shield, Star, BookOpen, Target } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 
@@ -28,7 +28,6 @@ export function ProfileScreen() {
     .flatMap((p) => p.testResults.map((t) => t.score))
     .reduce((a, b) => Math.max(a, b), 0);
 
-  // 닉네임 이니셜 아바타
   const initial = currentUser.nickname.charAt(0).toUpperCase();
 
   const handleLogout = () => {
@@ -37,40 +36,32 @@ export function ProfileScreen() {
   };
 
   return (
-    <div className="flex flex-col pb-6" style={{ minHeight: '100%', background: '#f8f9ff' }}>
+    <div className="flex flex-col pb-6 min-h-full bg-surface-page">
       {/* Header */}
-      <div
-        className="relative px-5 pt-14 pb-8 overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #B8D0FA 0%, #94B9F3 100%)' }}
-      >
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,0.12)' }} />
-        <div style={{ position: 'absolute', bottom: -20, left: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+      <div className="relative px-5 pt-14 pb-8 overflow-hidden gradient-brand">
+        <div className="absolute -top-10 -right-10 w-[150px] h-[150px] rounded-full bg-white/12" />
+        <div className="absolute -bottom-5 -left-5 w-[100px] h-[100px] rounded-full bg-white/8" />
 
         <div className="relative flex items-start justify-between">
           <div className="flex items-center gap-4">
-            {/* 이니셜 아바타 (DB에 profileImage 없음) */}
-            <div
-              className="rounded-full flex items-center justify-center"
-              style={{ width: 72, height: 72, background: '#fff', border: '3px solid rgba(255,255,255,0.7)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', flexShrink: 0 }}
-            >
-              <span style={{ fontSize: 28, fontWeight: 700, color: '#94B9F3' }}>{initial}</span>
+            <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center flex-shrink-0 bg-white border-[3px] border-white/70 shadow-md">
+              <span className="text-[28px] font-bold text-brand-blue-dark">{initial}</span>
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{currentUser.nickname}</h1>
+                <h1 className="text-xl font-bold text-white">{currentUser.nickname}</h1>
                 {currentUser.authorize === 'ROLE_ADMIN' && (
-                  <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(255,255,255,0.25)', fontSize: 11, color: '#fff', fontWeight: 600 }}>
+                  <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-white/25 text-[11px] text-white font-semibold">
                     <Shield size={10} />
                     관리자
                   </span>
                 )}
               </div>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 2 }}>
+              <p className="text-[13px] text-white/85 mt-0.5">
                 Lv.{level} · {getLevelTitle(level)}
               </p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>{currentUser.email}</p>
+              <p className="text-xs text-white/70 mt-0.5">{currentUser.email}</p>
             </div>
           </div>
 
@@ -78,8 +69,7 @@ export function ProfileScreen() {
             type="button"
             aria-label="프로필 편집"
             onClick={() => navigate('/profile/edit')}
-            className="flex items-center justify-center rounded-xl active:scale-95 transition-transform"
-            style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.25)', border: 'none' }}
+            className="w-9 h-9 flex items-center justify-center rounded-xl active:scale-95 transition-transform bg-white/25 border-0"
           >
             <Settings size={18} color="#fff" />
           </button>
@@ -87,36 +77,36 @@ export function ProfileScreen() {
 
         {/* streak & coin */}
         <div className="flex gap-3 mt-4">
-          <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.2)' }}>
-            <span style={{ fontSize: 16 }}>🔥</span>
+          <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded-xl bg-white/20">
+            <span className="text-base">🔥</span>
             <div>
-              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.75)' }}>연속 학습</p>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{currentUser.streak}일</p>
+              <p className="text-[10px] text-white/75">연속 학습</p>
+              <p className="text-[15px] font-bold text-white">{currentUser.streak}일</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.2)' }}>
-            <span style={{ fontSize: 16 }}>🪙</span>
+          <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded-xl bg-white/20">
+            <span className="text-base">🪙</span>
             <div>
-              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.75)' }}>보유 코인</p>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{currentUser.coin.toLocaleString()}</p>
+              <p className="text-[10px] text-white/75">보유 코인</p>
+              <p className="text-[15px] font-bold text-white">{currentUser.coin.toLocaleString()}</p>
             </div>
           </div>
         </div>
 
-        <div className="mt-4 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.2)' }}>
+        <div className="mt-4 p-3 rounded-2xl bg-white/20">
           <div className="flex justify-between items-center mb-2">
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>경험치</span>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)' }}>{expInLevel} / {expToNext} XP</span>
+            <span className="text-xs text-white/85 font-semibold">경험치</span>
+            <span className="text-xs text-white/85">{expInLevel} / {expToNext} XP</span>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.25)', borderRadius: 99, height: 8, overflow: 'hidden' }}>
+          <div className="bg-white/25 rounded-full h-2 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${expInLevel}%` }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              style={{ height: '100%', background: '#fff', borderRadius: 99 }}
+              className="h-full bg-white rounded-full"
             />
           </div>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 4, textAlign: 'right' }}>
+          <p className="text-[11px] text-white/70 mt-1 text-right">
             다음 레벨까지 {expToNext - expInLevel} XP
           </p>
         </div>
@@ -133,12 +123,11 @@ export function ProfileScreen() {
               key={stat.label}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl p-3 flex flex-col items-center gap-1"
-              style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+              className="rounded-2xl p-3 flex flex-col items-center gap-1 bg-white shadow-sm"
             >
               {stat.icon}
-              <span style={{ fontSize: 20, fontWeight: 700, color: '#1c1c1c' }}>{stat.value}</span>
-              <span style={{ fontSize: 11, color: '#737373' }}>{stat.label}</span>
+              <span className="text-xl font-bold text-text-main">{stat.value}</span>
+              <span className="text-[11px] text-text-sub">{stat.label}</span>
             </motion.div>
           ))}
         </div>
@@ -147,10 +136,9 @@ export function ProfileScreen() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl p-4"
-          style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+          className="rounded-2xl p-4 bg-white shadow-sm"
         >
-          <p style={{ fontSize: 14, fontWeight: 700, color: '#1c1c1c', marginBottom: 12 }}>🏅 업적</p>
+          <p className="text-sm font-bold text-text-main mb-3">🏅 업적</p>
           <div className="flex gap-3">
             {[
               { emoji: '📚', label: '첫 학습', achieved: totalLearned > 0 },
@@ -161,14 +149,12 @@ export function ProfileScreen() {
             ].map((ach) => (
               <div
                 key={ach.label}
-                className="flex flex-col items-center gap-1"
-                style={{ opacity: ach.achieved ? 1 : 0.35, flex: 1 }}
+                className={`flex flex-col items-center gap-1 flex-1 ${ach.achieved ? 'opacity-100' : 'opacity-35'}`}
               >
-                <div className="rounded-full flex items-center justify-center"
-                  style={{ width: 44, height: 44, background: ach.achieved ? '#EDE9BF' : '#f0f0f0', border: ach.achieved ? '2px solid #DDDEA5' : '2px solid transparent' }}>
-                  <span style={{ fontSize: 20 }}>{ach.emoji}</span>
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center ${ach.achieved ? 'bg-brand-beige border-2 border-brand-yellow' : 'bg-surface-lighter border-2 border-transparent'}`}>
+                  <span className="text-xl">{ach.emoji}</span>
                 </div>
-                <span style={{ fontSize: 10, color: ach.achieved ? '#1c1c1c' : '#737373', textAlign: 'center', lineHeight: 1.3 }}>
+                <span className={`text-[10px] text-center leading-[1.3] ${ach.achieved ? 'text-text-main' : 'text-text-sub'}`}>
                   {ach.label}
                 </span>
               </div>
@@ -182,8 +168,7 @@ export function ProfileScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           onClick={() => navigate('/profile/edit')}
-          className="w-full rounded-2xl py-4 active:scale-95 transition-transform"
-          style={{ background: '#B8D0FA', color: '#1c1c1c', fontSize: 16, fontWeight: 700, border: 'none' }}
+          className="w-full rounded-2xl py-4 active:scale-95 transition-transform bg-brand-blue text-text-main text-base font-bold border-0"
         >
           프로필 편집하기
         </motion.button>
@@ -194,8 +179,7 @@ export function ProfileScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           onClick={handleLogout}
-          className="w-full rounded-2xl py-3.5 active:scale-95 transition-transform"
-          style={{ background: '#f3f3f5', color: '#737373', fontSize: 15, fontWeight: 600, border: 'none' }}
+          className="w-full rounded-2xl py-3.5 active:scale-95 transition-transform bg-surface-muted text-text-sub text-[15px] font-semibold border-0"
         >
           로그아웃
         </motion.button>

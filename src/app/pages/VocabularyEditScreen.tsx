@@ -115,12 +115,6 @@ export function VocabularyEditScreen() {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '11px 13px', borderRadius: 10,
-    border: '1.5px solid #e5e7eb', fontSize: 14, outline: 'none',
-    background: '#fafafa', color: '#1c1c1c', boxSizing: 'border-box',
-  };
-
   const duplicateRowIds = new Set<string>();
   rows.forEach((row, i) => {
     const trimmed = row.english_word.trim().toLowerCase();
@@ -133,7 +127,7 @@ export function VocabularyEditScreen() {
     return (
       <MobileLayout>
         <div className="flex-1 flex items-center justify-center">
-          <p style={{ color: '#737373' }}>로딩 중...</p>
+          <p className="text-text-sub">로딩 중...</p>
         </div>
       </MobileLayout>
     );
@@ -141,26 +135,25 @@ export function VocabularyEditScreen() {
 
   return (
     <MobileLayout>
-      <div className="relative flex flex-col" style={{ height: '100dvh', background: '#f8f9ff' }}>
+      <div className="relative flex flex-col h-dvh bg-surface-page">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-12 pb-4" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
+        <div className="flex-shrink-0 px-4 pt-12 pb-4 bg-white border-b border-surface-lighter">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => navigate('/vocabulary')}
-              className="text-gray-500 bg-transparent border-none"
+              className="text-text-sub bg-transparent border-0"
               aria-label="Back"
             >
               <ChevronLeft size={26} />
             </button>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c' }}>
+            <h1 className="text-lg font-bold text-text-main">
               {isEdit ? '단어장 편집' : '단어장 만들기'}
             </h1>
             {isEdit && (
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="ml-auto px-3 py-1.5 rounded-xl"
-                style={{ background: '#fff0f0', color: '#d4183d', fontSize: 13, fontWeight: 600, border: '1px solid #fca5a5' }}
+                className="ml-auto px-3 py-1.5 rounded-xl bg-[#fff0f0] text-destructive text-[13px] font-semibold border border-[#fca5a5]"
               >
                 단어장 삭제
               </button>
@@ -171,29 +164,29 @@ export function VocabularyEditScreen() {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5">
           {/* 단어장 메타 정보 */}
-          <div className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#1c1c1c', marginBottom: 2 }}>단어장 정보</p>
+          <div className="rounded-2xl p-4 flex flex-col gap-3 bg-white shadow-sm">
+            <p className="text-[13px] font-bold text-text-main mb-0.5">단어장 정보</p>
             <div className="flex gap-3">
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 12, color: '#737373', display: 'block', marginBottom: 5 }}>레벨 (level) *</label>
+              <div className="flex-1">
+                <label className="text-xs text-text-sub block mb-1">레벨 (level) *</label>
                 <input
                   type="number"
                   min={1}
                   value={level}
                   onChange={(e) => setLevel(Number(e.target.value))}
                   placeholder="1"
-                  style={inputStyle}
+                  className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 12, color: '#737373', display: 'block', marginBottom: 5 }}>완료 보상 코인 (solved_coin)</label>
+              <div className="flex-1">
+                <label className="text-xs text-text-sub block mb-1">완료 보상 코인 (solved_coin)</label>
                 <input
                   type="number"
                   min={0}
                   value={solvedCoin}
                   onChange={(e) => setSolvedCoin(Number(e.target.value))}
                   placeholder="0"
-                  style={inputStyle}
+                  className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
                 />
               </div>
             </div>
@@ -201,11 +194,10 @@ export function VocabularyEditScreen() {
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#1c1c1c' }}>단어 목록 ({rows.length}개)</p>
+              <p className="text-[13px] font-bold text-text-main">단어 목록 ({rows.length}개)</p>
               <button
                 onClick={addRow}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl active:scale-95 transition-transform"
-                style={{ background: '#B8D0FA', color: '#1c1c1c', fontSize: 13, fontWeight: 600 }}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl active:scale-95 transition-transform bg-brand-blue text-text-main text-[13px] font-semibold"
               >
                 <Plus size={15} />
                 단어 추가
@@ -221,56 +213,51 @@ export function VocabularyEditScreen() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="rounded-2xl p-4"
-                    style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
+                    className="rounded-2xl p-4 bg-white shadow-sm"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#94B9F3' }}>#{i + 1}</span>
+                      <span className="text-xs font-bold text-brand-blue-dark">#{i + 1}</span>
                       <button
                         type="button"
                         aria-label="단어 삭제"
                         onClick={() => removeRow(row.rowId)}
                         disabled={rows.length <= 1}
-                        className={`flex items-center justify-center rounded-lg active:scale-95 transition-transform w-[30px] h-[30px] border-none ${rows.length <= 1 ? 'bg-[#f0f0f0] text-[#ccc]' : 'bg-[#fff0f0] text-[#d4183d]'}`}
+                        className={`w-[30px] h-[30px] flex items-center justify-center rounded-lg active:scale-95 transition-transform border-0 ${rows.length <= 1 ? 'bg-surface-lighter text-[#ccc]' : 'bg-[#fff0f0] text-destructive'}`}
                       >
                         <Trash2 size={14} />
                       </button>
                     </div>
 
                     <div className="flex gap-2">
-                      <div style={{ flex: 1 }}>
-                        <label style={{ fontSize: 11, color: '#737373', display: 'block', marginBottom: 4 }}>
+                      <div className="flex-1">
+                        <label className="text-[11px] text-text-sub block mb-1">
                           영어 단어 (english_word) *
                         </label>
                         <input
                           value={row.english_word}
                           onChange={(e) => updateRow(row.rowId, 'english_word', e.target.value)}
                           placeholder="예: accomplish"
-                          style={{
-                            ...inputStyle,
-                            border: duplicateRowIds.has(row.rowId) ? '1.5px solid #f87171' : inputStyle.border,
-                            background: duplicateRowIds.has(row.rowId) ? '#fff5f5' : inputStyle.background,
-                          }}
+                          className={`w-full px-3 py-[11px] rounded-[10px] border text-sm outline-none ${duplicateRowIds.has(row.rowId) ? 'border-[#f87171] bg-[#fff5f5]' : 'border-[#e5e7eb] bg-surface-input'} text-text-main`}
                         />
                         {duplicateRowIds.has(row.rowId) && (
                           <motion.p
                             initial={{ opacity: 0, y: -4 }}
                             animate={{ opacity: 1, y: 0 }}
-                            style={{ fontSize: 11, color: '#f87171', marginTop: 4, fontWeight: 600 }}
+                            className="text-[11px] text-[#f87171] mt-1 font-semibold"
                           >
                             ⚠️ 중복된 단어입니다
                           </motion.p>
                         )}
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ fontSize: 11, color: '#737373', display: 'block', marginBottom: 4 }}>
+                      <div className="flex-1">
+                        <label className="text-[11px] text-text-sub block mb-1">
                           뜻 (meaning) *
                         </label>
                         <input
                           value={row.meaning}
                           onChange={(e) => updateRow(row.rowId, 'meaning', e.target.value)}
                           placeholder="예: 성취하다"
-                          style={inputStyle}
+                          className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
                         />
                       </div>
                     </div>
@@ -282,8 +269,7 @@ export function VocabularyEditScreen() {
             <div className="flex gap-3 mt-3">
               <button
                 onClick={addRow}
-                className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 active:scale-95 transition-transform"
-                style={{ background: '#EDE9BF', color: '#1c1c1c', fontSize: 14, fontWeight: 600, border: 'none' }}
+                className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 active:scale-95 transition-transform bg-brand-beige text-text-main text-sm font-semibold border-0"
               >
                 <Plus size={16} />
                 칸 추가
@@ -291,12 +277,7 @@ export function VocabularyEditScreen() {
               <button
                 onClick={() => removeRow(rows[rows.length - 1]?.rowId)}
                 disabled={rows.length <= 1}
-                className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 active:scale-95 transition-transform"
-                style={{
-                  background: rows.length <= 1 ? '#f0f0f0' : '#f3f3f5',
-                  color: rows.length <= 1 ? '#ccc' : '#1c1c1c',
-                  fontSize: 14, fontWeight: 600, border: 'none',
-                }}
+                className={`flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 active:scale-95 transition-transform text-sm font-semibold border-0 ${rows.length <= 1 ? 'bg-surface-lighter text-[#ccc]' : 'bg-surface-muted text-text-main'}`}
               >
                 <Minus size={16} />
                 칸 줄이기
@@ -308,21 +289,20 @@ export function VocabularyEditScreen() {
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              style={{ fontSize: 13, color: '#d4183d', textAlign: 'center' }}
+              className="text-[13px] text-destructive text-center"
             >
               {error}
             </motion.p>
           )}
-          <div style={{ height: 16 }} />
+          <div className="h-4" />
         </div>
 
         {/* Save button */}
-        <div className="flex-shrink-0 px-5 py-4" style={{ background: '#fff', borderTop: '1px solid #f0f0f0' }}>
+        <div className="flex-shrink-0 px-5 py-4 bg-white border-t border-surface-lighter">
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full rounded-2xl py-4 flex items-center justify-center gap-2 active:scale-95 transition-transform"
-            style={{ background: saving ? '#c8ddf8' : '#B8D0FA', color: '#1c1c1c', fontSize: 16, fontWeight: 700 }}
+            className={`w-full rounded-2xl py-4 flex items-center justify-center gap-2 active:scale-95 transition-transform text-base font-bold text-text-main ${saving ? 'bg-brand-blue-dim' : 'bg-brand-blue'}`}
           >
             <Save size={18} />
             {saving ? '저장 중...' : '저장하기'}

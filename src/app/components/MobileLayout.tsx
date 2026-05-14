@@ -5,18 +5,11 @@ interface Props {
   className?: string;
 }
 
-/** Wrapper that simulates a smartphone viewport centered on desktop. */
 export function MobileLayout({ children, className = '' }: Props) {
   return (
-    <div className="min-h-screen flex justify-center" style={{ background: '#e8e8e8' }}>
+    <div className="min-h-screen flex justify-center bg-[#e8e8e8]">
       <div
-        className={`relative flex flex-col w-full overflow-hidden ${className}`}
-        style={{
-          maxWidth: 430,
-          minHeight: '100dvh',
-          background: '#ffffff',
-          fontFamily: "'Noto Sans KR', sans-serif",
-        }}
+        className={`relative flex flex-col w-full overflow-hidden max-w-[430px] min-h-dvh bg-white ${className}`}
       >
         {children}
       </div>

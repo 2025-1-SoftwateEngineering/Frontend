@@ -19,29 +19,26 @@ export function ConfirmModal({
 
   return (
     <div
-      className="absolute inset-0 flex items-center justify-center z-50 px-6"
-      style={{ background: 'rgba(0,0,0,0.45)' }}
+      className="absolute inset-0 flex items-center justify-center z-50 px-6 bg-black/45"
       onClick={onCancel}
     >
       <div
-        className="w-full rounded-2xl p-6 shadow-xl"
-        style={{ background: '#fff', maxWidth: 360 }}
+        className="w-full max-w-[360px] rounded-2xl p-6 shadow-xl bg-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-center mb-2" style={{ color: '#1c1c1c' }}>{title}</h3>
-        <p className="text-center mb-6" style={{ fontSize: 14, color: '#737373' }}>{message}</p>
+        <h3 className="text-center mb-2 text-text-main">{title}</h3>
+        <p className="text-center mb-6 text-sm text-text-sub">{message}</p>
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 rounded-xl py-3"
-            style={{ background: '#f3f3f5', color: '#1c1c1c', fontSize: 15 }}
+            className="flex-1 rounded-xl py-3 bg-surface-muted text-text-main text-[15px]"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 rounded-xl py-3"
-            style={{ background: confirmColor, color: '#fff', fontSize: 15 }}
+            className="flex-1 rounded-xl py-3 text-white text-[15px]"
+            style={{ background: confirmColor }}
           >
             {confirmLabel}
           </button>

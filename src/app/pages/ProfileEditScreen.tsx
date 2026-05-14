@@ -39,56 +39,48 @@ export function ProfileEditScreen() {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '14px 16px', borderRadius: 14,
-    border: '1.5px solid #e5e7eb', fontSize: 15, outline: 'none',
-    background: '#fafafa', color: '#1c1c1c', boxSizing: 'border-box',
-  };
-
-  // 이니셜 아바타
   const initial = currentUser.nickname.charAt(0).toUpperCase();
 
   return (
     <MobileLayout>
-      <div className="relative flex flex-col" style={{ height: '100dvh', background: '#f8f9ff' }}>
-        {/* Header */}
-        <div className="flex-shrink-0 flex items-center gap-2 px-4 pt-12 pb-4" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
-          <button type="button" onClick={() => navigate('/profile')} style={{ color: '#737373', background: 'none', border: 'none' }} title="뒤로 가기" aria-label="뒤로 가기">
+      <div className="relative flex flex-col h-dvh bg-surface-page">
+        <div className="flex-shrink-0 flex items-center gap-2 px-4 pt-12 pb-4 bg-white border-b border-surface-lighter">
+          <button type="button" onClick={() => navigate('/profile')} className="text-text-sub bg-transparent border-0" title="뒤로 가기" aria-label="뒤로 가기">
             <ChevronLeft size={26} />
           </button>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c' }}>프로필 편집</h1>
+          <h1 className="text-lg font-bold text-text-main">프로필 편집</h1>
         </div>
 
-        {/* Scroll content */}
         <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5">
-          {/* 아바타 미리보기 */}
-          <div className="rounded-2xl p-5 flex flex-col items-center gap-4" style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <div
-              className="rounded-full flex items-center justify-center"
-              style={{ width: 96, height: 96, background: '#B8D0FA', border: '3px solid #94B9F3', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
-            >
-              <span style={{ fontSize: 40, fontWeight: 700, color: '#fff' }}>{initial}</span>
+          <div className="rounded-2xl p-5 flex flex-col items-center gap-4 bg-white shadow-sm">
+            <div className="w-24 h-24 rounded-full flex items-center justify-center bg-brand-blue border-[3px] border-brand-blue-dark shadow-md">
+              <span className="text-[40px] font-bold text-white">{initial}</span>
             </div>
 
             <div className="w-full">
-              <label style={{ fontSize: 13, color: '#737373', display: 'block', marginBottom: 6 }}>닉네임</label>
+              <label className="text-[13px] text-text-sub block mb-1.5">닉네임</label>
               <input
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="닉네임 입력"
-                style={inputStyle}
+                className="w-full px-4 py-3.5 rounded-[14px] border border-[#e5e7eb] text-[15px] outline-none bg-surface-input text-text-main"
               />
             </div>
 
             <div className="w-full">
-              <label style={{ fontSize: 13, color: '#737373', display: 'block', marginBottom: 6 }}>이메일 (변경 불가)</label>
-              <input value={currentUser.email} disabled placeholder="이메일" title="이메일" style={{ ...inputStyle, background: '#f0f0f0', color: '#737373' }} />
+              <label className="text-[13px] text-text-sub block mb-1.5">이메일 (변경 불가)</label>
+              <input
+                value={currentUser.email}
+                disabled
+                placeholder="이메일"
+                title="이메일"
+                className="w-full px-4 py-3.5 rounded-[14px] border border-[#e5e7eb] text-[15px] outline-none bg-surface-lighter text-text-sub"
+              />
             </div>
           </div>
 
-          {/* 계정 정보 (읽기 전용) */}
-          <div className="rounded-2xl p-4" style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#1c1c1c', marginBottom: 12 }}>📊 계정 정보</p>
+          <div className="rounded-2xl p-4 bg-white shadow-sm">
+            <p className="text-sm font-bold text-text-main mb-3">📊 계정 정보</p>
             <div className="flex flex-col gap-3">
               {[
                 { label: '권한', value: currentUser.authorize === 'ROLE_ADMIN' ? '🛡️ 관리자' : '👤 일반 사용자' },
@@ -97,8 +89,8 @@ export function ProfileEditScreen() {
                 { label: '가입일', value: new Date(currentUser.created_at).toLocaleDateString('ko-KR') },
               ].map((info) => (
                 <div key={info.label} className="flex items-center justify-between py-1">
-                  <span style={{ fontSize: 13, color: '#737373' }}>{info.label}</span>
-                  <span style={{ fontSize: 13, color: '#1c1c1c', fontWeight: 600 }}>{info.value}</span>
+                  <span className="text-[13px] text-text-sub">{info.label}</span>
+                  <span className="text-[13px] text-text-main font-semibold">{info.value}</span>
                 </div>
               ))}
             </div>
@@ -106,30 +98,28 @@ export function ProfileEditScreen() {
 
           {error && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              style={{ fontSize: 13, color: '#d4183d', textAlign: 'center' }}>
+              className="text-[13px] text-destructive text-center">
               {error}
             </motion.p>
           )}
 
-          <div style={{ height: 8 }} />
+          <div className="h-2" />
 
           <button
             onClick={() => setShowWithdrawModal(true)}
-            style={{ background: 'none', border: 'none', color: '#ccc', fontSize: 13, textDecoration: 'underline', textAlign: 'center', width: '100%', padding: '8px 0', cursor: 'pointer' }}
+            className="bg-transparent border-0 text-[#ccc] text-[13px] underline text-center w-full py-2 cursor-pointer"
           >
             회원 탈퇴
           </button>
 
-          <div style={{ height: 20 }} />
+          <div className="h-5" />
         </div>
 
-        {/* Save button */}
-        <div className="flex-shrink-0 px-5 py-4" style={{ background: '#fff', borderTop: '1px solid #f0f0f0' }}>
+        <div className="flex-shrink-0 px-5 py-4 bg-white border-t border-surface-lighter">
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full rounded-2xl py-4 active:scale-95 transition-transform"
-            style={{ background: saving ? '#c8ddf8' : '#B8D0FA', color: '#1c1c1c', fontSize: 16, fontWeight: 700, border: 'none' }}
+            className={`w-full rounded-2xl py-4 active:scale-95 transition-transform text-base font-bold text-text-main border-0 ${saving ? 'bg-brand-blue-dim' : 'bg-brand-blue'}`}
           >
             {saving ? '저장 중...' : '저장하기'}
           </button>

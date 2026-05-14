@@ -31,17 +31,11 @@ export function EmailLoginScreen() {
     }
   };
 
-  const inputStyle = {
-    width: '100%', padding: '14px 16px', borderRadius: 14,
-    border: '1.5px solid #e5e7eb', fontSize: 15, outline: 'none',
-    background: '#fafafa', color: '#1c1c1c',
-  };
-
   return (
     <MobileLayout>
-      <div className="flex-1 flex flex-col" style={{ background: '#fff' }}>
+      <div className="flex-1 flex flex-col bg-white">
         <div className="flex items-center px-4 pt-12 pb-4">
-          <button type="button" onClick={() => navigate('/login')} className="text-gray-500 bg-transparent border-none" title="뒤로 가기">
+          <button type="button" onClick={() => navigate('/login')} className="text-text-sub bg-transparent border-0" title="뒤로 가기">
             <ChevronLeft size={26} />
           </button>
         </div>
@@ -52,39 +46,38 @@ export function EmailLoginScreen() {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="mb-8">
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1c1c1c', marginBottom: 6 }}>이메일로 로그인</h1>
-            <p style={{ fontSize: 14, color: '#737373' }}>가입한 이메일과 비밀번호를 입력해 주세요</p>
+            <h1 className="text-2xl font-bold text-text-main mb-1.5">이메일로 로그인</h1>
+            <p className="text-sm text-text-sub">가입한 이메일과 비밀번호를 입력해 주세요</p>
           </div>
 
           <div className="flex flex-col gap-4">
             <div>
-              <label style={{ fontSize: 13, color: '#737373', marginBottom: 6, display: 'block' }}>이메일</label>
+              <label className="text-[13px] text-text-sub mb-1.5 block">이메일</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@email.com"
-                style={inputStyle}
+                className="w-full px-4 py-3.5 rounded-[14px] border border-[#e5e7eb] text-[15px] outline-none bg-surface-input text-text-main"
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
               />
             </div>
 
             <div>
-              <label style={{ fontSize: 13, color: '#737373', marginBottom: 6, display: 'block' }}>비밀번호</label>
+              <label className="text-[13px] text-text-sub mb-1.5 block">비밀번호</label>
               <div className="relative">
                 <input
                   type={showPw ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="비밀번호 입력"
-                  style={{ ...inputStyle, paddingRight: 48 }}
+                  className="w-full px-4 py-3.5 pr-12 rounded-[14px] border border-[#e5e7eb] text-[15px] outline-none bg-surface-input text-text-main"
                   onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2"
-                  style={{ color: '#737373', background: 'none', border: 'none' }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub bg-transparent border-0"
                 >
                   {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -96,8 +89,7 @@ export function EmailLoginScreen() {
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mt-3"
-              style={{ fontSize: 13, color: '#d4183d', textAlign: 'center' }}
+              className="mt-3 text-[13px] text-destructive text-center"
             >
               {error}
             </motion.p>
@@ -106,8 +98,7 @@ export function EmailLoginScreen() {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full rounded-2xl py-4 mt-6 active:scale-95 transition-transform"
-            style={{ background: loading ? '#c8ddf8' : '#B8D0FA', color: '#1c1c1c', fontSize: 16, fontWeight: 700 }}
+            className={`w-full rounded-2xl py-4 mt-6 active:scale-95 transition-transform text-base font-bold text-text-main ${loading ? 'bg-brand-blue-dim' : 'bg-brand-blue'}`}
           >
             {loading ? '로그인 중...' : '로그인'}
           </button>
@@ -115,7 +106,7 @@ export function EmailLoginScreen() {
           <div className="flex justify-center mt-5">
             <button
               onClick={() => navigate('/login/forgot-password')}
-              style={{ fontSize: 13, color: '#94B9F3', background: 'none', border: 'none', textDecoration: 'underline' }}
+              className="text-[13px] text-brand-blue-dark bg-transparent border-0 underline"
             >
               비밀번호를 잊으셨나요?
             </button>

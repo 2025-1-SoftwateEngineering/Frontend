@@ -18,7 +18,7 @@ export function AppLayout() {
 
   return (
     <MobileLayout>
-      <div className="flex flex-col" style={{ height: '100dvh' }}>
+      <div className="flex flex-col h-dvh">
         <div className="flex-1 overflow-y-auto">
           <Outlet />
         </div>

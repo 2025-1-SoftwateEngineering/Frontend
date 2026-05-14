@@ -21,21 +21,18 @@ export function HomeScreen() {
   const dateStr = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
 
   return (
-    <div className="flex flex-col pb-4" style={{ minHeight: '100%', background: '#f8f9ff' }}>
+    <div className="flex flex-col pb-4 min-h-full bg-surface-page">
       {/* Header */}
-      <div
-        className="px-5 pt-14 pb-6 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #B8D0FA 0%, #94B9F3 100%)' }}
-      >
-        <div style={{ position: 'absolute', top: -30, right: -30, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }} />
-        <div style={{ position: 'absolute', top: 20, right: 60, width: 60, height: 60, borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
+      <div className="px-5 pt-14 pb-6 relative overflow-hidden gradient-brand">
+        <div className="absolute -top-7 -right-7 w-[130px] h-[130px] rounded-full bg-white/15" />
+        <div className="absolute top-5 right-[60px] w-[60px] h-[60px] rounded-full bg-white/10" />
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', marginBottom: 4 }}>{dateStr}</p>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 2 }}>
+          <p className="text-[13px] text-white/85 mb-1">{dateStr}</p>
+          <h1 className="text-[22px] font-bold text-white mb-0.5">
             {greeting}, {currentUser?.nickname}님! 👋
           </h1>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>
+          <p className="text-[13px] text-white/85">
             {currentUser?.authorize === 'ROLE_ADMIN' ? '🛡️ 관리자 모드' : '오늘도 영단어 학습을 시작해 봐요'}
           </p>
         </motion.div>
@@ -44,22 +41,20 @@ export function HomeScreen() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 mt-4 p-3 rounded-2xl"
-          style={{ background: 'rgba(255,255,255,0.25)' }}
+          className="flex items-center gap-2 mt-4 p-3 rounded-2xl bg-white/25"
         >
-          <div className="rounded-full flex items-center justify-center"
-            style={{ width: 40, height: 40, background: '#fff' }}>
-            <span style={{ fontSize: 18 }}>⭐</span>
+          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white">
+            <span className="text-lg">⭐</span>
           </div>
           <div>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>현재 레벨</p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>Lv.{level} · {totalExp} XP</p>
+            <p className="text-[11px] text-white/80">현재 레벨</p>
+            <p className="text-base font-bold text-white">Lv.{level} · {totalExp} XP</p>
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ background: 'rgba(255,255,255,0.3)', borderRadius: 99, height: 6, overflow: 'hidden', marginTop: 2 }}>
-              <div style={{ width: `${expInLevel}%`, height: '100%', background: '#fff', borderRadius: 99 }} />
+          <div className="flex-1">
+            <div className="bg-white/30 rounded-full h-1.5 overflow-hidden mt-0.5">
+              <div style={{ width: `${expInLevel}%` }} className="h-full bg-white rounded-full" />
             </div>
-            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.75)', marginTop: 2, textAlign: 'right' }}>
+            <p className="text-[10px] text-white/75 mt-0.5 text-right">
               {expInLevel}/100 XP
             </p>
           </div>
@@ -78,12 +73,11 @@ export function HomeScreen() {
               key={stat.label}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl p-3 flex flex-col items-center gap-1"
-              style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+              className="rounded-2xl p-3 flex flex-col items-center gap-1 bg-white shadow-sm"
             >
               {stat.icon}
-              <span style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c' }}>{stat.value}</span>
-              <span style={{ fontSize: 11, color: '#737373' }}>{stat.label}</span>
+              <span className="text-lg font-bold text-text-main">{stat.value}</span>
+              <span className="text-[11px] text-text-sub">{stat.label}</span>
             </motion.div>
           ))}
         </div>
@@ -94,19 +88,17 @@ export function HomeScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1c1c1c', marginBottom: 10 }}>빠른 시작</h2>
+          <h2 className="text-base font-bold text-text-main mb-2.5">빠른 시작</h2>
           <button
             onClick={() => navigate('/vocabulary')}
-            className="w-full flex items-center gap-4 rounded-2xl p-4 active:scale-98 transition-transform"
-            style={{ background: '#B8D0FA', boxShadow: '0 4px 12px rgba(184,208,250,0.5)' }}
+            className="w-full flex items-center gap-4 rounded-2xl p-4 active:scale-98 transition-transform bg-brand-blue shadow-[0_4px_12px_rgba(184,208,250,0.5)]"
           >
-            <div className="rounded-xl flex items-center justify-center"
-              style={{ width: 48, height: 48, background: 'rgba(255,255,255,0.4)' }}>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/40">
               <BookOpen size={24} color="#1c1c1c" />
             </div>
             <div className="text-left flex-1">
-              <p style={{ fontWeight: 700, color: '#1c1c1c', fontSize: 15 }}>단어장 학습하기</p>
-              <p style={{ fontSize: 12, color: 'rgba(28,28,28,0.65)', marginTop: 1 }}>TOEIC 핵심 단어 55개 수록</p>
+              <p className="font-bold text-text-main text-[15px]">단어장 학습하기</p>
+              <p className="text-xs text-text-main/65 mt-0.5">TOEIC 핵심 단어 55개 수록</p>
             </div>
             <ChevronRight size={20} color="#1c1c1c" />
           </button>
@@ -117,27 +109,24 @@ export function HomeScreen() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-2xl p-4"
-          style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+          className="rounded-2xl p-4 bg-white shadow-sm"
         >
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp size={18} color="#94B9F3" />
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1c1c1c' }}>오늘의 학습 목표</h3>
+            <h3 className="text-[15px] font-bold text-text-main">오늘의 학습 목표</h3>
           </div>
           {[
             { label: '단어 암기하기', done: totalLearned >= 10, count: `${Math.min(totalLearned, 10)}/10` },
             { label: '테스트 완료하기', done: totalTested >= 1, count: `${Math.min(totalTested, 1)}/1` },
           ].map((goal) => (
             <div key={goal.label} className="flex items-center gap-3 py-2">
-              <div className="rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ width: 22, height: 22, background: goal.done ? '#B8D0FA' : '#f3f3f5' }}>
-                {goal.done && <span style={{ fontSize: 12 }}>✓</span>}
+              <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center flex-shrink-0 ${goal.done ? 'bg-brand-blue' : 'bg-surface-muted'}`}>
+                {goal.done && <span className="text-xs">✓</span>}
               </div>
-              <span style={{ flex: 1, fontSize: 14, color: goal.done ? '#737373' : '#1c1c1c',
-                textDecoration: goal.done ? 'line-through' : 'none' }}>
+              <span className={`flex-1 text-sm ${goal.done ? 'text-text-sub line-through' : 'text-text-main'}`}>
                 {goal.label}
               </span>
-              <span style={{ fontSize: 12, color: '#94B9F3', fontWeight: 600 }}>{goal.count}</span>
+              <span className="text-xs text-brand-blue-dark font-semibold">{goal.count}</span>
             </div>
           ))}
         </motion.div>
@@ -147,11 +136,10 @@ export function HomeScreen() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="rounded-2xl p-4"
-          style={{ background: '#F8EDD6' }}
+          className="rounded-2xl p-4 bg-brand-peach"
         >
-          <p style={{ fontSize: 12, color: '#776A77', fontWeight: 600, marginBottom: 4 }}>💡 학습 팁</p>
-          <p style={{ fontSize: 13, color: '#1c1c1c', lineHeight: 1.7 }}>
+          <p className="text-xs text-brand-purple font-semibold mb-1">💡 학습 팁</p>
+          <p className="text-[13px] text-text-main leading-[1.7]">
             암기한 단어는 테스트로 확인하세요. 직접 스펠링을 쓰면 기억에 훨씬 오래 남아요!
           </p>
         </motion.div>

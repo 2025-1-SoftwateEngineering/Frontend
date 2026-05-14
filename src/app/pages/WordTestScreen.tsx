@@ -74,7 +74,7 @@ export function WordTestScreen() {
     return (
       <MobileLayout>
         <div className="flex-1 flex items-center justify-center">
-          <p style={{ color: '#737373' }}>로딩 중...</p>
+          <p className="text-text-sub">로딩 중...</p>
         </div>
       </MobileLayout>
     );
@@ -89,12 +89,12 @@ export function WordTestScreen() {
     return (
       <MobileLayout>
         <StreakPopup result={streakResult} onClose={() => setStreakResult(null)} />
-        <div className="flex flex-col" style={{ height: '100dvh', background: '#f8f9ff' }}>
-          <div className="px-4 pt-12 pb-3 flex items-center" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
-            <button type="button" onClick={() => navigate(`/vocabulary/${bookId}`)} title="뒤로 가기" style={{ color: '#737373', background: 'none', border: 'none' }}>
+        <div className="flex flex-col h-dvh bg-surface-page">
+          <div className="px-4 pt-12 pb-3 flex items-center bg-white border-b border-surface-lighter">
+            <button type="button" onClick={() => navigate(`/vocabulary/${bookId}`)} title="뒤로 가기" className="text-text-sub bg-transparent border-0">
               <ChevronLeft size={26} />
             </button>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c', marginLeft: 8 }}>테스트 완료</h1>
+            <h1 className="text-lg font-bold text-text-main ml-2">테스트 완료</h1>
           </div>
 
           <motion.div
@@ -102,35 +102,35 @@ export function WordTestScreen() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <span style={{ fontSize: 72 }}>{emoji}</span>
-            <h2 style={{ fontSize: 28, fontWeight: 700, color: '#1c1c1c' }}>{pct}점</h2>
-            <p style={{ fontSize: 16, color: '#737373' }}>{msg}</p>
+            <span className="text-[72px]">{emoji}</span>
+            <h2 className="text-[28px] font-bold text-text-main">{pct}점</h2>
+            <p className="text-base text-text-sub">{msg}</p>
 
-            <div className="w-full rounded-2xl p-5" style={{ background: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
+            <div className="w-full rounded-2xl p-5 bg-white shadow-sm">
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div>
-                  <p style={{ fontSize: 24, fontWeight: 700, color: '#94B9F3' }}>{correct}</p>
-                  <p style={{ fontSize: 12, color: '#737373' }}>정답</p>
+                  <p className="text-2xl font-bold text-brand-blue-dark">{correct}</p>
+                  <p className="text-xs text-text-sub">정답</p>
                 </div>
                 <div>
-                  <p style={{ fontSize: 24, fontWeight: 700, color: '#d4183d' }}>{words.length - correct}</p>
-                  <p style={{ fontSize: 12, color: '#737373' }}>오답</p>
+                  <p className="text-2xl font-bold text-destructive">{words.length - correct}</p>
+                  <p className="text-xs text-text-sub">오답</p>
                 </div>
                 <div>
-                  <p style={{ fontSize: 24, fontWeight: 700, color: '#DDDEA5' }}>+{correct * 10}</p>
-                  <p style={{ fontSize: 12, color: '#737373' }}>XP 획득</p>
+                  <p className="text-2xl font-bold text-brand-yellow">+{correct * 10}</p>
+                  <p className="text-xs text-text-sub">XP 획득</p>
                 </div>
               </div>
             </div>
 
             {words.some((_, i) => !scores[i]) && (
               <div className="w-full">
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#d4183d', marginBottom: 8 }}>틀린 단어 복습</p>
+                <p className="text-[13px] font-semibold text-destructive mb-2">틀린 단어 복습</p>
                 <div className="flex flex-col gap-2">
                   {words.filter((_, i) => !scores[i]).map((w) => (
-                    <div key={w.word_id} className="rounded-xl p-3 flex justify-between" style={{ background: '#fff3f3' }}>
-                      <span style={{ fontWeight: 600, color: '#1c1c1c' }}>{w.english_word}</span>
-                      <span style={{ color: '#737373', fontSize: 13 }}>{w.meaning}</span>
+                    <div key={w.word_id} className="rounded-xl p-3 flex justify-between bg-[#fff3f3]">
+                      <span className="font-semibold text-text-main">{w.english_word}</span>
+                      <span className="text-text-sub text-[13px]">{w.meaning}</span>
                     </div>
                   ))}
                 </div>
@@ -140,15 +140,13 @@ export function WordTestScreen() {
             <div className="flex flex-col gap-3 w-full">
               <button
                 onClick={() => { setIdx(0); setInput(''); setChecked(false); setScores([]); setPhase('test'); setWords([...words].sort(() => Math.random() - 0.5)); }}
-                className="w-full rounded-2xl py-4"
-                style={{ background: '#B8D0FA', color: '#1c1c1c', fontSize: 16, fontWeight: 700 }}
+                className="w-full rounded-2xl py-4 bg-brand-blue text-text-main text-base font-bold"
               >
                 다시 테스트하기
               </button>
               <button
                 onClick={() => navigate(`/vocabulary/${bookId}`)}
-                className="w-full rounded-2xl py-4"
-                style={{ background: '#f3f3f5', color: '#1c1c1c', fontSize: 16, fontWeight: 600 }}
+                className="w-full rounded-2xl py-4 bg-surface-muted text-text-main text-base font-semibold"
               >
                 단어장으로 돌아가기
               </button>
@@ -161,20 +159,20 @@ export function WordTestScreen() {
 
   return (
     <MobileLayout>
-      <div className="flex flex-col" style={{ height: '100dvh', background: '#f8f9ff' }}>
+      <div className="flex flex-col h-dvh bg-surface-page">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-12 pb-4" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
+        <div className="flex-shrink-0 px-4 pt-12 pb-4 bg-white border-b border-surface-lighter">
           <div className="flex items-center gap-2 mb-3">
-            <button type="button" aria-label="Back" onClick={() => navigate(`/vocabulary/${bookId}`)} className="text-[#737373] bg-transparent border-none">
+            <button type="button" aria-label="Back" onClick={() => navigate(`/vocabulary/${bookId}`)} className="text-text-sub bg-transparent border-0">
               <ChevronLeft size={26} />
             </button>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c' }}>단어 테스트</h1>
-            <span className="ml-auto" style={{ fontSize: 13, color: '#737373' }}>{idx + 1} / {words.length}</span>
+            <h1 className="text-lg font-bold text-text-main">단어 테스트</h1>
+            <span className="ml-auto text-[13px] text-text-sub">{idx + 1} / {words.length}</span>
           </div>
-          <div style={{ background: '#f0f0f0', borderRadius: 99, height: 6, overflow: 'hidden' }}>
+          <div className="bg-surface-lighter rounded-full h-1.5 overflow-hidden">
             <motion.div
               animate={{ width: `${((idx + (checked ? 1 : 0)) / words.length) * 100}%` }}
-              style={{ height: '100%', background: '#B8D0FA', borderRadius: 99 }}
+              className="h-full bg-brand-blue rounded-full"
               transition={{ duration: 0.4 }}
             />
           </div>
@@ -187,16 +185,15 @@ export function WordTestScreen() {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
-              className="rounded-3xl p-6 flex flex-col gap-3"
-              style={{ background: '#fff', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
+              className="rounded-3xl p-6 flex flex-col gap-3 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
             >
-              <p style={{ fontSize: 12, color: '#94B9F3', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>뜻</p>
-              <p style={{ fontSize: 22, fontWeight: 700, color: '#1c1c1c', lineHeight: 1.4 }}>{current?.meaning}</p>
+              <p className="text-xs text-brand-blue-dark font-semibold uppercase tracking-[0.08em]">뜻</p>
+              <p className="text-[22px] font-bold text-text-main leading-[1.4]">{current?.meaning}</p>
             </motion.div>
           </AnimatePresence>
 
-          <div className="rounded-2xl p-4" style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <p style={{ fontSize: 12, color: '#737373', marginBottom: 8 }}>영어 단어를 입력하세요</p>
+          <div className="rounded-2xl p-4 bg-white shadow-sm">
+            <p className="text-xs text-text-sub mb-2">영어 단어를 입력하세요</p>
             <div className="flex gap-2">
               <input
                 ref={inputRef}
@@ -205,48 +202,42 @@ export function WordTestScreen() {
                 onKeyDown={(e) => e.key === 'Enter' && (checked ? handleNext() : handleCheck())}
                 placeholder="영어 스펠링 입력..."
                 disabled={checked}
-                style={{
-                  flex: 1, padding: '12px 14px', borderRadius: 12,
-                  border: checked ? `2px solid ${isCorrect ? '#4ade80' : '#f87171'}` : '1.5px solid #e5e7eb',
-                  fontSize: 16, outline: 'none', background: '#fafafa', color: '#1c1c1c',
-                }}
+                className={`flex-1 px-[14px] py-3 rounded-xl text-base outline-none bg-surface-input text-text-main ${checked ? `border-2 ${isCorrect ? 'border-[#4ade80]' : 'border-[#f87171]'}` : 'border border-[#e5e7eb]'}`}
               />
               {checked ? (
                 isCorrect
-                  ? <CheckCircle size={28} color="#4ade80" style={{ alignSelf: 'center', flexShrink: 0 }} />
-                  : <XCircle size={28} color="#f87171" style={{ alignSelf: 'center', flexShrink: 0 }} />
+                  ? <CheckCircle size={28} color="#4ade80" className="self-center flex-shrink-0" />
+                  : <XCircle size={28} color="#f87171" className="self-center flex-shrink-0" />
               ) : null}
             </div>
             {checked && !isCorrect && (
               <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                style={{ fontSize: 14, color: '#94B9F3', marginTop: 8, fontWeight: 600 }}>
-                정답: <span style={{ color: '#1c1c1c' }}>{current?.english_word}</span>
+                className="text-sm text-brand-blue-dark mt-2 font-semibold">
+                정답: <span className="text-text-main">{current?.english_word}</span>
               </motion.p>
             )}
             {checked && isCorrect && (
               <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                style={{ fontSize: 14, color: '#4ade80', marginTop: 8, fontWeight: 600 }}>
+                className="text-sm text-[#4ade80] mt-2 font-semibold">
                 정답입니다! 🎉
               </motion.p>
             )}
           </div>
         </div>
 
-        <div className="flex-shrink-0 px-5 py-4" style={{ background: '#fff', borderTop: '1px solid #f0f0f0' }}>
+        <div className="flex-shrink-0 px-5 py-4 bg-white border-t border-surface-lighter">
           {!checked ? (
             <button
               onClick={handleCheck}
               disabled={!input.trim()}
-              className="w-full rounded-2xl py-4 active:scale-95 transition-transform"
-              style={{ background: input.trim() ? '#B8D0FA' : '#e5e7eb', color: '#1c1c1c', fontSize: 16, fontWeight: 700 }}
+              className={`w-full rounded-2xl py-4 active:scale-95 transition-transform text-base font-bold text-text-main ${input.trim() ? 'bg-brand-blue' : 'bg-[#e5e7eb]'}`}
             >
               확인하기
             </button>
           ) : (
             <button
               onClick={handleNext}
-              className="w-full rounded-2xl py-4 active:scale-95 transition-transform"
-              style={{ background: '#94B9F3', color: '#1c1c1c', fontSize: 16, fontWeight: 700 }}
+              className="w-full rounded-2xl py-4 active:scale-95 transition-transform bg-brand-blue-dark text-text-main text-base font-bold"
             >
               {idx < words.length - 1 ? '다음 단어 →' : '결과 보기'}
             </button>

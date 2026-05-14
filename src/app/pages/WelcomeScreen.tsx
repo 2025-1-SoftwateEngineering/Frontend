@@ -33,7 +33,7 @@ export function WelcomeScreen() {
 
   return (
     <MobileLayout>
-      <div className="relative flex-1 flex flex-col overflow-hidden" style={{ background: '#fff' }}>
+      <div className="relative flex-1 flex flex-col overflow-hidden bg-white">
         <BackgroundGraphic />
 
         <motion.div
@@ -42,11 +42,10 @@ export function WelcomeScreen() {
           transition={{ delay: 0.2 }}
           className="flex items-center gap-2 px-6 pt-14"
         >
-          <div className="rounded-xl flex items-center justify-center"
-            style={{ width: 36, height: 36, background: '#B8D0FA' }}>
-            <span style={{ fontSize: 18 }}>📖</span>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-brand-blue">
+            <span className="text-lg">📖</span>
           </div>
-          <span style={{ fontWeight: 700, fontSize: 17, color: '#1c1c1c' }}>VocaBuddy</span>
+          <span className="font-bold text-[17px] text-text-main">VocaBuddy</span>
         </motion.div>
 
         <div className="flex-1 flex flex-col items-center justify-center px-8 z-10">
@@ -56,13 +55,13 @@ export function WelcomeScreen() {
             transition={{ delay: 0.3, type: 'spring', stiffness: 150, damping: 20 }}
             className="text-center"
           >
-            <p style={{ fontSize: 14, color: '#94B9F3', fontWeight: 600, marginBottom: 12, letterSpacing: '0.05em' }}>
+            <p className="text-[14px] text-brand-blue-dark font-semibold mb-3 tracking-[0.05em]">
               TOEIC 영단어 학습 앱
             </p>
-            <h1 style={{ fontSize: 26, fontWeight: 700, color: '#1c1c1c', lineHeight: 1.4, marginBottom: 16 }}>
+            <h1 className="text-[26px] font-bold text-text-main leading-[1.4] mb-4">
               영단어 마스터를 위한<br />목표 달성 코치
             </h1>
-            <p style={{ fontSize: 14, color: '#737373', lineHeight: 1.7 }}>
+            <p className="text-sm text-text-sub leading-[1.7]">
               매일 꾸준히 학습하고<br />TOEIC 고득점을 향해 나아가세요
             </p>
           </motion.div>
@@ -73,11 +72,8 @@ export function WelcomeScreen() {
             transition={{ delay: 0.5 }}
             className="my-10"
           >
-            <div
-              className="rounded-3xl flex items-center justify-center shadow-md"
-              style={{ width: 160, height: 160, background: 'linear-gradient(135deg, #B8D0FA, #94B9F3)' }}
-            >
-              <span style={{ fontSize: 72 }}>🎯</span>
+            <div className="w-40 h-40 rounded-3xl flex items-center justify-center shadow-md gradient-brand">
+              <span className="text-[72px]">🎯</span>
             </div>
           </motion.div>
         </div>
@@ -90,8 +86,7 @@ export function WelcomeScreen() {
         >
           <button
             onClick={() => navigate('/login')}
-            className="w-full rounded-2xl py-4 shadow-md active:scale-95 transition-transform"
-            style={{ background: '#B8D0FA', color: '#1c1c1c', fontSize: 17, fontWeight: 700 }}
+            className="w-full rounded-2xl py-4 shadow-md active:scale-95 transition-transform bg-brand-blue text-text-main text-[17px] font-bold"
           >
             시작하기
           </button>
