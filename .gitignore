@@ -23,6 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 
-### 민감정보 ###
-src/main/config/firebaseConfig.ts
-src/main/config/apiConfig.ts
