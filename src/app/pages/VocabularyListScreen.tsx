@@ -7,12 +7,6 @@ import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 import { vocaApi } from '../../main/features/domain/voca/vocaApi';
 import type { VocaBook } from '../../main/features/domain/voca/types';
 
-const LEVEL_COLORS: Record<number, string> = {
-  1: '#B8D0FA',
-  2: '#DDDEA5',
-  3: '#EDE9BF',
-};
-
 export function VocabularyListScreen() {
   const { currentUser } = useAuth();
   const { getBookProgress } = useProgress();
@@ -25,7 +19,7 @@ export function VocabularyListScreen() {
     vocaApi.getBooks().then(setBooks).finally(() => setLoading(false));
   }, []);
 
-  const totalWords = books.reduce((a, b) => a + b.words.length, 0);
+  const totalWords = books.reduce((a, b) => a + (b.wordCount ?? b.words.length), 0);
 
   return (
     <div className="flex flex-col pb-4" style={{ minHeight: '100%', background: '#f8f9ff' }}>
@@ -65,13 +59,19 @@ export function VocabularyListScreen() {
           Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="rounded-2xl animate-pulse" style={{ height: 130, background: '#e5e7eb' }} />
           ))
+        ) : books.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <span style={{ fontSize: 48 }}>📚</span>
+            <p style={{ fontSize: 15, color: '#737373' }}>등록된 단어장이 없습니다.</p>
+          </div>
         ) : (
           books.map((book, i) => {
+            const wordCount = book.wordCount ?? book.words.length;
             const { learnedCount, lastScore } = getBookProgress(book.voca_id);
-            const progress = book.words.length > 0
-              ? Math.round((learnedCount / book.words.length) * 100)
+            const progress = wordCount > 0
+              ? Math.round((learnedCount / wordCount) * 100)
               : 0;
-            const levelColor = LEVEL_COLORS[book.level] || '#f3f3f5';
+            const title = book.description ?? `단어장 #${book.voca_id}`;
 
             return (
               <motion.div
@@ -85,9 +85,9 @@ export function VocabularyListScreen() {
                 <div className="flex items-start justify-between mb-2">
                   <span
                     className="px-2.5 py-1 rounded-lg"
-                    style={{ fontSize: 11, fontWeight: 600, background: levelColor, color: '#1c1c1c' }}
+                    style={{ fontSize: 11, fontWeight: 600, background: '#B8D0FA', color: '#1c1c1c' }}
                   >
-                    Lv.{book.level}
+                    #{book.voca_id}
                   </span>
                   {lastScore !== null && (
                     <span style={{ fontSize: 12, color: '#94B9F3', fontWeight: 600 }}>
@@ -97,16 +97,16 @@ export function VocabularyListScreen() {
                 </div>
 
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1c1c1c', marginBottom: 3 }}>
-                  레벨 {book.level} 단어장 #{book.voca_id}
+                  {title}
                 </h3>
                 <p style={{ fontSize: 12, color: '#737373', marginBottom: 12 }}>
-                  완료 보상 🪙 {book.solved_coin} 코인 · {book.words.length}개 단어
+                  {book.solved_coin > 0 && `완료 보상 🪙 ${book.solved_coin} 코인 · `}{wordCount}개 단어
                 </p>
 
                 <div className="mb-1 flex items-center justify-between">
                   <span style={{ fontSize: 12, color: '#737373' }}>암기 진도</span>
                   <span style={{ fontSize: 12, color: '#94B9F3', fontWeight: 600 }}>
-                    {learnedCount}/{book.words.length} ({progress}%)
+                    {learnedCount}/{wordCount} ({progress}%)
                   </span>
                 </div>
                 <div style={{ background: '#f0f0f0', borderRadius: 99, height: 6, overflow: 'hidden', marginBottom: 12 }}>
@@ -119,7 +119,7 @@ export function VocabularyListScreen() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span style={{ fontSize: 12, color: '#737373' }}>📚 {book.words.length}개 단어</span>
+                  <span style={{ fontSize: 12, color: '#737373' }}>📚 {wordCount}개 단어</span>
                   <button
                     onClick={() => navigate(`/vocabulary/${book.voca_id}`)}
                     className="ml-auto flex items-center gap-1 px-4 py-2 rounded-xl active:scale-95 transition-transform"

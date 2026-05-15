@@ -4,9 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react";
 import { vocaApi } from "../../main/features/domain/voca/vocaApi";
 import { useProgress } from "../../main/features/domain/voca/ProgressContext";
-import { useStreak } from "../../main/features/domain/streak/StreakContext";
-import type { StreakResult } from "../../main/features/domain/streak/StreakContext";
-import { StreakPopup } from "../components/StreakPopup";
+import { useAuth } from "../../main/features/domain/auth/AuthContext";
 import type {
   VocaBook,
   Word,
@@ -17,14 +15,13 @@ export function WordMemorizeScreen() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
   const { markLearned, progress } = useProgress();
-  const { completeStudy } = useStreak();
+  const { currentUser } = useAuth();
 
   const [book, setBook] = useState<VocaBook | null>(null);
   const [words, setWords] = useState<Word[]>([]);
   const [idx, setIdx] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [done, setDone] = useState(false);
-  const [streakResult, setStreakResult] = useState<StreakResult | null>(null);
 
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -50,8 +47,14 @@ export function WordMemorizeScreen() {
     } else {
       markLearned(Number(bookId), current.word_id);
       setDone(true);
-      const result = completeStudy();
-      if (!result.isAlreadyDone) setStreakResult(result);
+      // 로그인된 경우 암기 목록을 서버에 저장
+      if (currentUser) {
+        const learnedIds = [
+          ...(progress[Number(bookId)]?.learnedWordIds ?? []),
+          current.word_id,
+        ];
+        vocaApi.saveMemorized(Number(bookId), learnedIds).catch(() => {});
+      }
     }
   };
 
@@ -99,7 +102,6 @@ export function WordMemorizeScreen() {
   if (done) {
     return (
       <MobileLayout>
-        <StreakPopup result={streakResult} onClose={() => setStreakResult(null)} />
         <div
           className="flex flex-col"
           style={{ height: "100dvh", background: "#f8f9ff" }}
@@ -112,10 +114,13 @@ export function WordMemorizeScreen() {
             }}
           >
             <button
-              type="button"
               onClick={() => navigate(`/vocabulary/${bookId}`)}
-              aria-label="뒤로가기"
-              className="text-[#737373] bg-transparent border-none"
+              style={{
+                color: "#737373",
+                background: "none",
+                border: "none",
+              }}
+              title="Back"
             >
               <ChevronLeft size={26} />
             </button>
@@ -186,31 +191,46 @@ export function WordMemorizeScreen() {
 
             <div className="flex flex-col gap-3 w-full">
               <button
-                type="button"
                 onClick={() =>
                   navigate(`/vocabulary/${bookId}/test`)
                 }
-                className="w-full rounded-2xl py-4 bg-[#B8D0FA] text-[#1c1c1c] text-[16px] font-bold"
+                className="w-full rounded-2xl py-4"
+                style={{
+                  background: "#B8D0FA",
+                  color: "#1c1c1c",
+                  fontSize: 16,
+                  fontWeight: 700,
+                }}
               >
                 테스트 하러 가기
               </button>
               <button
-                type="button"
                 onClick={() => {
                   setIdx(0);
                   setRevealed(false);
                   setDone(false);
                 }}
-                className="w-full rounded-2xl py-4 bg-[#f3f3f5] text-[#1c1c1c] text-[16px] font-semibold"
+                className="w-full rounded-2xl py-4"
+                style={{
+                  background: "#f3f3f5",
+                  color: "#1c1c1c",
+                  fontSize: 16,
+                  fontWeight: 600,
+                }}
               >
                 처음부터 다시 보기
               </button>
               <button
-                type="button"
                 onClick={() =>
                   navigate(`/vocabulary/${bookId}`)
                 }
-                className="w-full rounded-2xl py-4 bg-transparent text-[#737373] text-[15px] font-medium"
+                className="w-full rounded-2xl py-4"
+                style={{
+                  background: "none",
+                  color: "#737373",
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
               >
                 단어장으로 돌아가기
               </button>
@@ -244,10 +264,13 @@ export function WordMemorizeScreen() {
         >
           <div className="flex items-center gap-2 mb-3">
             <button
-              type="button"
               onClick={() => navigate(`/vocabulary/${bookId}`)}
-              aria-label="뒤로가기"
-              className="text-[#737373] bg-transparent border-none"
+              style={{
+                color: "#737373",
+                background: "none",
+                border: "none",
+              }}
+              title="Back"
             >
               <ChevronLeft size={26} />
             </button>
@@ -415,21 +438,27 @@ export function WordMemorizeScreen() {
           }}
         >
           <button
-            type="button"
             onClick={goPrev}
             disabled={idx === 0}
-            className={`flex-1 rounded-2xl py-3.5 active:scale-95 transition-transform ${
-              idx === 0
-                ? "bg-[#f0f0f0] text-[#ccc]"
-                : "bg-[#f3f3f5] text-[#1c1c1c]"
-            } text-[15px] font-semibold`}
+            className="flex-1 rounded-2xl py-3.5 active:scale-95 transition-transform"
+            style={{
+              background: idx === 0 ? "#f0f0f0" : "#f3f3f5",
+              color: idx === 0 ? "#ccc" : "#1c1c1c",
+              fontSize: 15,
+              fontWeight: 600,
+            }}
           >
             ← 이전
           </button>
           <button
-            type="button"
             onClick={goNext}
-            className="flex-1 rounded-2xl py-3.5 active:scale-95 transition-transform bg-[#B8D0FA] text-[#1c1c1c] text-[15px] font-bold"
+            className="flex-1 rounded-2xl py-3.5 active:scale-95 transition-transform"
+            style={{
+              background: "#B8D0FA",
+              color: "#1c1c1c",
+              fontSize: 15,
+              fontWeight: 700,
+            }}
           >
             {idx < words.length - 1 ? "다음 →" : "완료 ✓"}
           </button>
