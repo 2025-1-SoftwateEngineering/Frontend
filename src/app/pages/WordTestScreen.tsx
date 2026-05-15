@@ -3,10 +3,9 @@ import { useParams, useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, CheckCircle, XCircle } from 'lucide-react';
 import { vocaApi } from '../../main/features/domain/voca/vocaApi';
+import type { TestSubmitAnswer } from '../../main/features/domain/voca/vocaApi';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
-import { useStreak } from '../../main/features/domain/streak/StreakContext';
-import type { StreakResult } from '../../main/features/domain/streak/StreakContext';
-import { StreakPopup } from '../components/StreakPopup';
+import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import type { VocaBook, Word } from '../../main/features/domain/voca/types';
 import { MobileLayout } from '../components/MobileLayout';
 
@@ -16,7 +15,7 @@ export function WordTestScreen() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
   const { addTestResult } = useProgress();
-  const { completeStudy } = useStreak();
+  const { currentUser } = useAuth();
 
   const [book, setBook] = useState<VocaBook | null>(null);
   const [words, setWords] = useState<Word[]>([]);
@@ -25,8 +24,9 @@ export function WordTestScreen() {
   const [checked, setChecked] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [scores, setScores] = useState<boolean[]>([]);
+  const [answers, setAnswers] = useState<TestSubmitAnswer[]>([]);
   const [phase, setPhase] = useState<Phase>('test');
-  const [streakResult, setStreakResult] = useState<StreakResult | null>(null);
+  const [earnedCoins, setEarnedCoins] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -51,22 +51,38 @@ export function WordTestScreen() {
     setChecked(true);
   };
 
-  const handleNext = () => {
-    const newScores = [...scores, isCorrect];
+  const handleNext = async () => {
+    const newAnswer: TestSubmitAnswer = { wordId: current.word_id, answer: input.trim() };
+    const newAnswers = [...answers, newAnswer];
+    const newScores  = [...scores, isCorrect];
+
     if (idx < words.length - 1) {
+      setAnswers(newAnswers);
       setScores(newScores);
       setIdx(idx + 1);
       setInput('');
       setChecked(false);
       setIsCorrect(false);
     } else {
-      setScores(newScores);
-      setPhase('result');
-      const score = Math.round((newScores.filter(Boolean).length / words.length) * 100);
+      // 테스트 완료 - 로컬 진도 저장
+      const score  = Math.round((newScores.filter(Boolean).length / words.length) * 100);
       const xpGain = newScores.filter(Boolean).length * 10;
       addTestResult(Number(bookId), { score, total: words.length, date: new Date().toISOString() }, xpGain);
-      const result = completeStudy();
-      if (!result.isAlreadyDone) setStreakResult(result);
+
+      // 로그인된 경우 서버에 완료 전송 (코인/스트릭 반영)
+      if (currentUser) {
+        try {
+          const result = await vocaApi.completeTest(Number(bookId), newAnswers);
+          setEarnedCoins(result.earnedCoins);
+        } catch {
+          // 서버 전송 실패 시 로컬 계산 코인 표시
+          setEarnedCoins(null);
+        }
+      }
+
+      setAnswers(newAnswers);
+      setScores(newScores);
+      setPhase('result');
     }
   };
 
@@ -85,13 +101,13 @@ export function WordTestScreen() {
     const pct = Math.round((correct / words.length) * 100);
     const emoji = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
     const msg = pct >= 80 ? '훌륭해요!' : pct >= 50 ? '잘 하고 있어요!' : '더 연습이 필요해요!';
+    const localXP = correct * 10;
 
     return (
       <MobileLayout>
-        <StreakPopup result={streakResult} onClose={() => setStreakResult(null)} />
         <div className="flex flex-col" style={{ height: '100dvh', background: '#f8f9ff' }}>
           <div className="px-4 pt-12 pb-3 flex items-center" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
-            <button type="button" onClick={() => navigate(`/vocabulary/${bookId}`)} title="뒤로 가기" style={{ color: '#737373', background: 'none', border: 'none' }}>
+            <button onClick={() => navigate(`/vocabulary/${bookId}`)} style={{ color: '#737373', background: 'none', border: 'none' }} aria-label="Back" title="Back">
               <ChevronLeft size={26} />
             </button>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c', marginLeft: 8 }}>테스트 완료</h1>
@@ -117,10 +133,16 @@ export function WordTestScreen() {
                   <p style={{ fontSize: 12, color: '#737373' }}>오답</p>
                 </div>
                 <div>
-                  <p style={{ fontSize: 24, fontWeight: 700, color: '#DDDEA5' }}>+{correct * 10}</p>
+                  <p style={{ fontSize: 24, fontWeight: 700, color: '#DDDEA5' }}>+{localXP}</p>
                   <p style={{ fontSize: 12, color: '#737373' }}>XP 획득</p>
                 </div>
               </div>
+              {earnedCoins !== null && (
+                <div className="mt-3 pt-3 flex items-center justify-center gap-2" style={{ borderTop: '1px solid #f0f0f0' }}>
+                  <span style={{ fontSize: 18 }}>🪙</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: '#1c1c1c' }}>+{earnedCoins} 코인 획득!</span>
+                </div>
+              )}
             </div>
 
             {words.some((_, i) => !scores[i]) && (
@@ -139,7 +161,12 @@ export function WordTestScreen() {
 
             <div className="flex flex-col gap-3 w-full">
               <button
-                onClick={() => { setIdx(0); setInput(''); setChecked(false); setScores([]); setPhase('test'); setWords([...words].sort(() => Math.random() - 0.5)); }}
+                onClick={() => {
+                  setIdx(0); setInput(''); setChecked(false);
+                  setScores([]); setAnswers([]); setPhase('test');
+                  setEarnedCoins(null);
+                  setWords([...words].sort(() => Math.random() - 0.5));
+                }}
                 className="w-full rounded-2xl py-4"
                 style={{ background: '#B8D0FA', color: '#1c1c1c', fontSize: 16, fontWeight: 700 }}
               >
@@ -165,7 +192,7 @@ export function WordTestScreen() {
         {/* Header */}
         <div className="flex-shrink-0 px-4 pt-12 pb-4" style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
           <div className="flex items-center gap-2 mb-3">
-            <button type="button" aria-label="Back" onClick={() => navigate(`/vocabulary/${bookId}`)} className="text-[#737373] bg-transparent border-none">
+            <button onClick={() => navigate(`/vocabulary/${bookId}`)} style={{ color: '#737373', background: 'none', border: 'none' }} aria-label="Back" title="Back">
               <ChevronLeft size={26} />
             </button>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1c' }}>단어 테스트</h1>

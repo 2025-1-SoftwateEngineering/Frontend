@@ -156,6 +156,10 @@ export interface CrosswordHint {
  */
 export interface VocaBook extends Voca {
   words: Word[];
+  /** GET /api/v1/voca 응답에서 반환되는 단어장 설명 */
+  description?: string;
+  /** GET /api/v1/voca 응답에서 반환되는 단어 수 (words 미로드 시 사용) */
+  wordCount?: number;
 }
 
 // ─── Progress Tracking (Frontend-Only) ───────────────────────────────────────
