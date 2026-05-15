@@ -1,4 +1,4 @@
-import { apiFetch, tokenStorage } from '../../../config/apiConfig';
+import { apiFetch, API_URL, tokenStorage } from '../../../config/apiConfig';
 import type { Member } from '../member/types';
 import type { LoginRequest, RegisterRequest } from './types';
 
@@ -50,7 +50,9 @@ export const authApi = {
     tokenStorage.setTokens(accessToken, refreshToken);
 
     // 프로필 조회
-    const profileRes = await apiFetch<MyProfileResult>('/members/me');
+    const profileRes = await apiFetch<MyProfileResult>('/members/me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }, API_URL);
     const member = toMember(profileRes.result!);
 
     return { member, token: accessToken };
@@ -74,7 +76,7 @@ export const authApi = {
     tokenStorage.setTokens(accessToken, refreshToken);
 
     // 프로필 조회
-    const profileRes = await apiFetch<MyProfileResult>('/members/me');
+    const profileRes = await apiFetch<MyProfileResult>('/members/me', {}, API_URL);
     const member = toMember(profileRes.result!);
 
     return { member, token: accessToken };
@@ -99,7 +101,7 @@ export const authApi = {
    * 세션 복원 시 사용합니다.
    */
   getMyProfile: async (): Promise<Member> => {
-    const res = await apiFetch<MyProfileResult>('/members/me');
+    const res = await apiFetch<MyProfileResult>('/members/me', {}, API_URL);
     return toMember(res.result!);
   },
 
