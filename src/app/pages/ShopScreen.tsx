@@ -2,23 +2,147 @@ import { motion } from 'motion/react';
 import { ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 
-const CATEGORIES = [
-  { label: '미니게임 아이템', icon: '🎮', items: ['힌트 카드', '시간 연장', '단어 공개'] },
-  { label: '프로필 배경', icon: '🖼️', items: ['별빛 하늘', '도서관', '카페', '바다'] },
-  { label: '프로필 프레임', icon: '✨', items: ['골드 프레임', '쿨 블루', '네온', '플라워'] },
-  { label: '아이콘', icon: '🏅', items: ['왕관', '다이아몬드', '불꽃', '번개'] },
+interface ShopItem {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  price: number;
+  badge?: string;
+}
+
+const STREAK_ITEMS: ShopItem[] = [
+  {
+    id: 1,
+    name: '연속학습 방어권',
+    description: '하루 건너뛰어도 연속 기록 유지',
+    image: '⚡',
+    price: 500,
+  },
 ];
+
+const PROFILE_ITEMS: ShopItem[] = [
+  { id: 10, name: '배경1',      description: '프로필 배경', image: '🌌', price: 300 },
+  { id: 11, name: '배경2',      description: '프로필 배경', image: '📚', price: 300 },
+  { id: 12, name: '프로필사진1', description: '프로필 사진', image: '🖼️', price: 400 },
+  { id: 13, name: '프로필사진2', description: '프로필 사진', image: '🌸', price: 350 },
+];
+
+const PET_GROWTH_ITEMS: ShopItem[] = [
+  { id: 20, name: '일반 사료', description: '애완동물 성장 아이템', image: '🍎', price: 150 },
+  { id: 21, name: '고급 사료', description: '애완동물 성장 아이템', image: '🍎', price: 150 },
+  { id: 22, name: '물',        description: '애완동물 성장 아이템', image: '💊', price: 350 },
+];
+
+const PET_STYLE_ITEMS: ShopItem[] = [
+  { id: 30, name: '배경1', description: '애완동물 프로필 아이템', image: '🎩', price: 200 },
+  { id: 31, name: '배경2', description: '애완동물 프로필 아이템', image: '👑', price: 500 },
+];
+
+const MINIGAME_ITEMS: ShopItem[] = [
+  { id: 40, name: '시간 추가 (10초)', description: '미니게임 사지선다',   image: '🃏', price: 100 },
+  { id: 41, name: '시간 추가 (30초)', description: '미니게임 사지선다',   image: '🃏', price: 100 },
+  { id: 42, name: '시작 스펠링 보기', description: '미니게임 십자말풀이', image: '⏱️', price: 180 },
+  { id: 43, name: '랜덤 스펠링 보기', description: '미니게임 십자말풀이', image: '🔍', price: 220 },
+];
+
+function SectionTitle({ emoji, label }: { emoji: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-3 mt-6">
+      <span style={{ fontSize: 16 }}>{emoji}</span>
+      <span className="text-[15px] font-bold text-text-main">{label}</span>
+      <div className="flex-1 ml-1 h-px bg-surface-lighter" />
+    </div>
+  );
+}
+
+function ItemBadge({ badge }: { badge: string }) {
+  const isHot = badge === 'HOT';
+  return (
+    <span
+      className="absolute top-2 right-2 rounded-md px-1.5 py-0.5"
+      style={{
+        fontSize: 9,
+        fontWeight: 700,
+        background: isHot ? '#FAEEDA' : '#D6EAF8',
+        color: isHot ? '#854F0B' : '#1A5276',
+        lineHeight: 1.4,
+      }}
+    >
+      {badge}
+    </span>
+  );
+}
+
+function ItemCard({ item }: { item: ShopItem }) {
+  return (
+    <motion.div
+      whileTap={{ scale: 0.97 }}
+      className="relative flex flex-col items-center rounded-2xl p-3 bg-white cursor-pointer"
+      style={{ border: '1px solid #F8EDD6', boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}
+    >
+      {item.badge && <ItemBadge badge={item.badge} />}
+      <div
+        className="flex items-center justify-center rounded-xl mb-2"
+        style={{ width: 54, height: 54, background: '#F8F4E8', fontSize: 28 }}
+      >
+        {item.image}
+      </div>
+      <p className="text-[12px] font-bold text-text-main text-center mb-0.5">{item.name}</p>
+      <p className="text-[10px] text-text-sub text-center mb-2 leading-[1.4]">{item.description}</p>
+      <div
+        className="flex items-center gap-1 w-full justify-center rounded-xl py-1.5"
+        style={{ background: '#FFF8E1', border: '1px solid #FFE082' }}
+      >
+        <span style={{ fontSize: 12 }}>🪙</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#B8860B' }}>
+          {item.price.toLocaleString()}
+        </span>
+      </div>
+    </motion.div>
+  );
+}
+
+function StreakItemCard({ item }: { item: ShopItem }) {
+  return (
+    <motion.div
+      whileTap={{ scale: 0.98 }}
+      className="relative flex items-center gap-4 rounded-2xl px-5 py-4 bg-white cursor-pointer"
+      style={{ border: '1px solid #F8EDD6', boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}
+    >
+      {item.badge && <ItemBadge badge={item.badge} />}
+      <div
+        className="flex items-center justify-center rounded-2xl flex-shrink-0"
+        style={{ width: 64, height: 64, background: '#FFF3CD', fontSize: 34 }}
+      >
+        {item.image}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[15px] font-bold text-text-main mb-1">{item.name}</p>
+        <p className="text-[12px] text-text-sub leading-[1.5] mb-2">{item.description}</p>
+        <div
+          className="inline-flex items-center gap-1 rounded-xl px-3 py-1"
+          style={{ background: '#FFF8E1', border: '1px solid #FFE082' }}
+        >
+          <span style={{ fontSize: 13 }}>🪙</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#B8860B' }}>
+            {item.price.toLocaleString()}
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export function ShopScreen() {
   const { currentUser } = useAuth();
 
   return (
-    <div className="flex flex-col pb-4 min-h-full bg-surface-page">
-      <div className="px-5 pt-14 pb-5 bg-white border-b border-surface-lighter">
+    <div className="flex flex-col min-h-full bg-surface-page">
+      <div className="flex-shrink-0 px-5 pt-4 pb-4 bg-white border-b border-surface-lighter">
         <div className="flex items-center gap-2">
           <ShoppingBag size={22} color="#94B9F3" />
           <h1 className="text-[22px] font-bold text-text-main">상점</h1>
-
           {currentUser && (
             <div className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFF8E1] border border-[#FFE082]">
               <span className="text-[15px]">🪙</span>
@@ -31,44 +155,46 @@ export function ShopScreen() {
         <p className="text-[13px] text-text-sub mt-1">학습 포인트로 특별한 아이템을 구매하세요</p>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mx-5 mt-5 rounded-2xl p-5 flex flex-col items-center gap-2 gradient-brand"
-      >
-        <span className="text-[40px]">🛍️</span>
-        <h2 className="text-lg font-bold text-white">상점 준비 중</h2>
-        <p className="text-[13px] text-white/85 text-center leading-[1.7]">
-          다양한 아이템이 곧 출시됩니다!<br />
-          열심히 학습하며 포인트를 모아두세요 ✨
-        </p>
-      </motion.div>
+      <div className="flex-1 overflow-y-auto px-4 pb-6">
+        <SectionTitle emoji="🔥" label="연속학습 파괴" />
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          {STREAK_ITEMS.map((item) => (
+            <StreakItemCard key={item.id} item={item} />
+          ))}
+        </motion.div>
 
-      <div className="px-5 mt-5">
-        <p className="text-sm font-semibold text-text-main mb-3">준비 중인 카테고리</p>
-        <div className="flex flex-col gap-3">
-          {CATEGORIES.map((cat, ci) => (
-            <motion.div
-              key={cat.label}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: ci * 0.08 }}
-              className="rounded-2xl p-4 bg-white shadow-sm"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xl">{cat.icon}</span>
-                <span className="font-semibold text-[15px] text-text-main">{cat.label}</span>
-                <span className="ml-auto px-2 py-0.5 rounded-full text-[11px] font-semibold bg-brand-yellow text-brand-purple">
-                  준비 중
-                </span>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                {cat.items.map((item) => (
-                  <div key={item} className="px-3 py-1.5 rounded-xl bg-surface-muted text-xs text-text-sub">
-                    {item}
-                  </div>
-                ))}
-              </div>
+        <SectionTitle emoji="👤" label="프로필" />
+        <div className="grid grid-cols-2 gap-3">
+          {PROFILE_ITEMS.map((item, i) => (
+            <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.06 }}>
+              <ItemCard item={item} />
+            </motion.div>
+          ))}
+        </div>
+
+        <SectionTitle emoji="🐣" label="애완동물 성장" />
+        <div className="grid grid-cols-2 gap-3">
+          {PET_GROWTH_ITEMS.map((item, i) => (
+            <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.06 }}>
+              <ItemCard item={item} />
+            </motion.div>
+          ))}
+        </div>
+
+        <SectionTitle emoji="🎀" label="애완동물 프로필" />
+        <div className="grid grid-cols-2 gap-3">
+          {PET_STYLE_ITEMS.map((item, i) => (
+            <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.06 }}>
+              <ItemCard item={item} />
+            </motion.div>
+          ))}
+        </div>
+
+        <SectionTitle emoji="🎮" label="미니게임" />
+        <div className="grid grid-cols-2 gap-3">
+          {MINIGAME_ITEMS.map((item, i) => (
+            <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.06 }}>
+              <ItemCard item={item} />
             </motion.div>
           ))}
         </div>
