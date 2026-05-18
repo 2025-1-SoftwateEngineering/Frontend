@@ -2,24 +2,17 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Clock, Star } from 'lucide-react';
-import { vocaApi } from '../../main/features/domain/voca/vocaApi';
-import type { VocaBook, Word } from '../../main/features/domain/voca/types';
+import { quizApi } from '../../main/features/domain/voca/vocaApi';
+import type { ChoiceQuestion } from '../../main/features/domain/voca/vocaApi';
 import { MobileLayout } from '../components/MobileLayout';
 
 const INIT_SECONDS = 10;
 const WARN_SECONDS = 5;
 const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
 
-type Phase = 'quiz' | 'result';
+type Phase = 'loading' | 'quiz' | 'result';
 type ChoiceState = 'idle' | 'correct' | 'wrong' | 'dim';
 type CardState = 'idle' | 'correct' | 'wrong';
-
-function generateChoices(correct: Word, all: Word[]): Word[] {
-  if (all.length <= 4) return [...all].sort(() => Math.random() - 0.5);
-  const others = all.filter((w) => w.word_id !== correct.word_id);
-  const picks = [...others].sort(() => Math.random() - 0.5).slice(0, 3);
-  return [...picks, correct].sort(() => Math.random() - 0.5);
-}
 
 function getChoiceStyle(state: ChoiceState): React.CSSProperties {
   switch (state) {
@@ -47,45 +40,49 @@ function getCardStyle(state: CardState): React.CSSProperties {
 }
 
 export function QuizScreen() {
-  const { bookId } = useParams<{ bookId: string }>();
-  const navigate   = useNavigate();
+  const { choiceId } = useParams<{ choiceId: string }>();
+  const navigate = useNavigate();
 
-  const [book, setBook]   = useState<VocaBook | null>(null);
-  const [words, setWords] = useState<Word[]>([]);
-  const [idx, setIdx]     = useState(0);
-  const [choices, setChoices]           = useState<Word[]>([]);
-  const [selected, setSelected]         = useState<number | null>(null);
+  const [phase, setPhase] = useState<Phase>('loading');
+  const [question, setQuestion] = useState<ChoiceQuestion | null>(null);
+  const [questionNumber, setQuestionNumber] = useState(0);
+
   const [choiceStates, setChoiceStates] = useState<ChoiceState[]>(['idle', 'idle', 'idle', 'idle']);
-  const [cardState, setCardState]       = useState<CardState>('idle');
-  const [resultMsg, setResultMsg]       = useState('');
-  const [scores, setScores]             = useState<boolean[]>([]);
-  const [phase, setPhase]               = useState<Phase>('quiz');
-  const [timer, setTimer]               = useState(INIT_SECONDS);
+  const [cardState, setCardState] = useState<CardState>('idle');
+  const [resultMsg, setResultMsg] = useState('');
+  const [answered, setAnswered] = useState(false);
+  const [isLoadingNext, setIsLoadingNext] = useState(false);
+
+  const [correctCount, setCorrectCount] = useState(0);
+  const [totalAnswered, setTotalAnswered] = useState(0);
+  const [totalScore, setTotalScore] = useState(0);
+
+  const [timer, setTimer] = useState(INIT_SECONDS);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const submitResultRef = useRef<{ hasNext: boolean; nextCurrent: number | null } | null>(null);
 
-  const answered      = selected !== null;
-  const current       = words[idx];
-  const isLast        = idx === words.length - 1;
   const isTimeWarning = timer <= WARN_SECONDS;
-  const correctCount  = scores.filter(Boolean).length;
 
-  useEffect(() => {
-    if (!bookId) return;
-    vocaApi.getBook(Number(bookId)).then((b) => {
-      setBook(b);
-      setWords([...b.words].sort(() => Math.random() - 0.5));
-    });
-  }, [bookId]);
-
-  useEffect(() => {
-    if (words.length > 0 && words[idx]) {
-      setChoices(generateChoices(words[idx], words));
-      setSelected(null);
+  const loadQuestion = useCallback(async (current: number) => {
+    if (!choiceId) return;
+    const q = await quizApi.getChoiceQuestion(Number(choiceId), current);
+    if (q) {
+      setQuestion(q);
+      setAnswered(false);
       setChoiceStates(['idle', 'idle', 'idle', 'idle']);
       setCardState('idle');
       setResultMsg('');
+      submitResultRef.current = null;
+      setQuestionNumber((n) => n + 1);
+      setPhase('quiz');
+    } else {
+      setPhase('result');
     }
-  }, [idx, words]);
+  }, [choiceId]);
+
+  useEffect(() => {
+    loadQuestion(0);
+  }, [loadQuestion]);
 
   const startTimer = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -99,85 +96,102 @@ export function QuizScreen() {
   }, []);
 
   useEffect(() => {
-    if (words.length > 0 && phase === 'quiz') {
+    if (phase === 'quiz' && question) {
       startTimer();
       return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }
-  }, [idx, words, phase, startTimer]);
+  }, [question?.id, phase, startTimer]);
 
   useEffect(() => {
-    if (timer === 0 && !answered) handlePick(-1);
-  }, [timer, answered]);
+    if (timer === 0 && !answered && phase === 'quiz') handlePick(null);
+  }, [timer, answered, phase]);
 
-  const handlePick = (wordId: number) => {
-    if (answered || !current) return;
+  const handlePick = async (optionId: number | null) => {
+    if (answered || !question || !choiceId) return;
     if (intervalRef.current) clearInterval(intervalRef.current);
-    setSelected(wordId);
+    setAnswered(true);
 
-    const isCorrect = wordId === current.word_id;
-    setChoiceStates(
-      choices.map((c) => {
-        if (c.word_id === current.word_id) return 'correct';
-        if (c.word_id === wordId && !isCorrect) return 'wrong';
-        return 'dim';
-      })
-    );
-    setCardState(isCorrect ? 'correct' : 'wrong');
-    setResultMsg(
-      wordId === -1
-        ? `시간 초과! 정답: ${current.english_word}`
-        : isCorrect
-          ? '정답이에요! 🎉'
-          : `오답! 정답: ${current.english_word}`
-    );
-  };
+    try {
+      const result = await quizApi.submitChoiceAnswer(Number(choiceId), optionId ?? 0, question.id);
+      const isCorrect = result.isCorrect;
 
-  const handleNext = () => {
-    if (!answered || !current) return;
-    const isCorrect  = selected === current.word_id;
-    const newScores  = [...scores, isCorrect];
-    if (isLast) {
-      setScores(newScores);
-      setPhase('result');
-    } else {
-      setScores(newScores);
-      setIdx((n) => n + 1);
+      setTotalAnswered((n) => n + 1);
+      if (isCorrect) setCorrectCount((c) => c + 1);
+      setTotalScore(result.score ?? 0);
+
+      if (optionId === null) {
+        setCardState('wrong');
+        setResultMsg('시간 초과!');
+        setChoiceStates(question.choices.map(() => 'dim'));
+      } else {
+        setChoiceStates(question.choices.map((c) => {
+          if (c.id === optionId && isCorrect)  return 'correct';
+          if (c.id === optionId && !isCorrect) return 'wrong';
+          return 'dim';
+        }));
+        setCardState(isCorrect ? 'correct' : 'wrong');
+        setResultMsg(isCorrect ? '정답이에요! 🎉' : '오답!');
+      }
+
+      submitResultRef.current = { hasNext: result.hasNext, nextCurrent: result.nextCurrent };
+    } catch {
+      setCardState('wrong');
+      setResultMsg('오류가 발생했습니다.');
+      setChoiceStates(question.choices.map(() => 'dim'));
+      setTotalAnswered((n) => n + 1);
+      submitResultRef.current = { hasNext: false, nextCurrent: null };
     }
   };
 
-  const handleRetry = () => {
-    setIdx(0);
-    setScores([]);
-    setPhase('quiz');
-    setWords((prev) => [...prev].sort(() => Math.random() - 0.5));
+  const handleNext = async () => {
+    if (!answered) return;
+    const sr = submitResultRef.current;
+    if (!sr) return;
+
+    if (!sr.hasNext || sr.nextCurrent === null) {
+      setPhase('result');
+      return;
+    }
+
+    setIsLoadingNext(true);
+    await loadQuestion(sr.nextCurrent);
+    setIsLoadingNext(false);
   };
 
-  if (!book || words.length === 0) {
+  const handleRetry = () => {
+    setPhase('loading');
+    setQuestionNumber(0);
+    setCorrectCount(0);
+    setTotalAnswered(0);
+    setTotalScore(0);
+    submitResultRef.current = null;
+    loadQuestion(0);
+  };
+
+  // ── 로딩 ─────────────────────────────────────────────────────────────────────
+  if (phase === 'loading' || !question) {
     return (
       <MobileLayout>
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex h-dvh items-center justify-center bg-surface-page">
           <p className="text-text-sub">로딩 중...</p>
         </div>
       </MobileLayout>
     );
   }
 
-  // ── 결과 화면 ──────────────────────────────────────────────────────────────
+  // ── 결과 화면 ─────────────────────────────────────────────────────────────────
   if (phase === 'result') {
-    const correct = scores.filter(Boolean).length;
-    const pct     = Math.round((correct / words.length) * 100);
-    const emoji   = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
-    const msg     = pct >= 80 ? '훌륭해요!' : pct >= 50 ? '잘 하고 있어요!' : '더 연습이 필요해요!';
+    const pct   = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+    const emoji = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
+    const msg   = pct >= 80 ? '훌륭해요!' : pct >= 50 ? '잘 하고 있어요!' : '더 연습이 필요해요!';
 
     return (
       <MobileLayout>
-        <div className="flex flex-col h-dvh" style={{ background: '#f8f9ff' }}>
-          <div className="flex-shrink-0 px-4 pt-12 pb-4 bg-white" style={{ borderBottom: '1px solid #f0f0f0' }}>
+        <div className="flex flex-col h-dvh bg-surface-page">
+          <div className="flex-shrink-0 px-4 pt-4 pb-4 bg-white border-b border-surface-lighter">
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate(`/vocabulary/${bookId}`)}
-                style={{ color: '#737373', background: 'none', border: 'none', cursor: 'pointer' }}
-              >
+              <button onClick={() => navigate('/choices')}
+                className="text-text-sub bg-transparent border-none cursor-pointer">
                 <ChevronLeft size={26} />
               </button>
               <h1 className="text-lg font-bold text-text-main">퀴즈 완료</h1>
@@ -186,40 +200,35 @@ export function QuizScreen() {
 
           <motion.div
             className="flex-1 flex flex-col items-center justify-center px-6 gap-6"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           >
             <span className="text-[72px]">{emoji}</span>
             <h2 className="text-[28px] font-bold text-text-main">{pct}점</h2>
             <p className="text-base text-text-sub">{msg}</p>
 
             <div className="w-full rounded-2xl p-5 bg-white" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-              <div className="grid grid-cols-2 gap-3 text-center">
+              <div className="grid grid-cols-3 gap-3 text-center">
                 <div>
-                  <p className="text-2xl font-bold" style={{ color: '#4ade80' }}>{correct}</p>
+                  <p className="text-2xl font-bold" style={{ color: '#4ade80' }}>{correctCount}</p>
                   <p className="text-xs text-text-sub">정답</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold" style={{ color: '#f87171' }}>{words.length - correct}</p>
+                  <p className="text-2xl font-bold" style={{ color: '#f87171' }}>{totalAnswered - correctCount}</p>
                   <p className="text-xs text-text-sub">오답</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold" style={{ color: '#B8860B' }}>{totalScore.toLocaleString()}</p>
+                  <p className="text-xs text-text-sub">점수</p>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 w-full">
-              <button
-                onClick={handleRetry}
-                className="w-full rounded-2xl py-4 text-base font-bold"
-                style={{ background: '#B8D0FA', color: '#1c1c1c', border: 'none', cursor: 'pointer' }}
-              >
+              <button onClick={handleRetry} className="w-full rounded-2xl py-4 text-base font-bold bg-brand-blue text-text-main border-none cursor-pointer">
                 다시 풀기
               </button>
-              <button
-                onClick={() => navigate(`/vocabulary/${bookId}`)}
-                className="w-full rounded-2xl py-4 text-base font-semibold"
-                style={{ background: '#f3f3f5', color: '#1c1c1c', border: 'none', cursor: 'pointer' }}
-              >
-                단어장으로 돌아가기
+              <button onClick={() => navigate('/choices')} className="w-full rounded-2xl py-4 text-base font-semibold bg-surface-muted text-text-main border-none cursor-pointer">
+                목록으로 돌아가기
               </button>
             </div>
           </motion.div>
@@ -228,19 +237,16 @@ export function QuizScreen() {
     );
   }
 
-  // ── 퀴즈 화면 ──────────────────────────────────────────────────────────────
+  // ── 퀴즈 화면 ─────────────────────────────────────────────────────────────────
   return (
     <MobileLayout>
       <div className="flex flex-col h-dvh" style={{ background: '#f8f9ff' }}>
 
         {/* 헤더 */}
-        <div className="flex-shrink-0 px-4 pt-12 pb-4 bg-white" style={{ borderBottom: '1px solid #f0f0f0' }}>
+        <div className="flex-shrink-0 px-4 pt-4 pb-4 bg-white border-b border-surface-lighter">
           <div className="flex items-center gap-2 mb-3">
-            <button
-              onClick={() => navigate(`/vocabulary/${bookId}`)}
-              aria-label="뒤로가기"
-              style={{ color: '#737373', background: 'none', border: 'none', cursor: 'pointer' }}
-            >
+            <button onClick={() => navigate('/choices')} aria-label="뒤로가기"
+              className="text-text-sub bg-transparent border-none cursor-pointer">
               <ChevronLeft size={26} />
             </button>
 
@@ -258,26 +264,20 @@ export function QuizScreen() {
               </span>
             </div>
 
-            {/* 점수 */}
-            <div
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full"
-              style={{ background: '#FFF8E1', border: '1px solid #FFE082' }}
-            >
+            {/* 정답 수 */}
+            <div className="flex items-center gap-1 px-3 py-1.5 rounded-full"
+              style={{ background: '#FFF8E1', border: '1px solid #FFE082' }}>
               <Star size={13} color="#B8860B" fill="#B8860B" />
               <span style={{ fontSize: 13, fontWeight: 700, color: '#B8860B' }}>{correctCount}</span>
             </div>
           </div>
 
-          {/* 진행 바 */}
+          {/* 문제 번호 */}
           <div className="flex justify-end mb-1">
-            <span style={{ fontSize: 12, color: '#737373' }}>{idx + 1} / {words.length}</span>
+            <span style={{ fontSize: 12, color: '#737373' }}>문제 {questionNumber}</span>
           </div>
           <div style={{ background: '#f0f0f0', borderRadius: 99, height: 6, overflow: 'hidden' }}>
-            <motion.div
-              animate={{ width: `${((idx + 1) / words.length) * 100}%` }}
-              style={{ height: '100%', background: '#B8D0FA', borderRadius: 99 }}
-              transition={{ duration: 0.4 }}
-            />
+            <div style={{ height: '100%', background: '#B8D0FA', borderRadius: 99, width: '100%' }} />
           </div>
         </div>
 
@@ -287,14 +287,12 @@ export function QuizScreen() {
           {/* 단어 카드 */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={`card-${idx}`}
+              key={`card-${question.id}`}
               initial={{ opacity: 0, x: 40 }}
               animate={
-                cardState === 'correct'
-                  ? { opacity: 1, x: 0, scale: [1, 1.04, 1] }
-                  : cardState === 'wrong'
-                    ? { opacity: 1, x: [0, -6, 6, -5, 5, 0] }
-                    : { opacity: 1, x: 0 }
+                cardState === 'correct' ? { opacity: 1, x: 0, scale: [1, 1.04, 1] } :
+                cardState === 'wrong'   ? { opacity: 1, x: [0, -6, 6, -5, 5, 0] } :
+                                          { opacity: 1, x: 0 }
               }
               exit={{ opacity: 0, x: -40 }}
               transition={{ duration: 0.35 }}
@@ -309,12 +307,11 @@ export function QuizScreen() {
                 color: cardState === 'correct' ? '#16a34a' : cardState === 'wrong' ? '#dc2626' : '#1c1c1c',
                 transition: 'color 0.2s',
               }}>
-                {current?.meaning}
+                {question.question}
               </p>
               {resultMsg && (
                 <motion.p
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   style={{ fontSize: 13, fontWeight: 700, marginTop: 2, color: cardState === 'correct' ? '#16a34a' : '#dc2626' }}
                 >
                   {resultMsg}
@@ -323,30 +320,25 @@ export function QuizScreen() {
             </motion.div>
           </AnimatePresence>
 
-          {/* 보기 */}
+          {/* 보기 4개 */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={`choices-${idx}`}
+              key={`choices-${question.id}`}
               className="flex flex-col gap-3"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             >
-              {choices.map((choice, i) => {
+              {question.choices.map((choice, i) => {
                 const state = choiceStates[i];
                 return (
                   <motion.button
-                    key={choice.word_id}
+                    key={choice.id}
                     whileTap={!answered ? { scale: 0.98 } : {}}
-                    onClick={() => handlePick(choice.word_id)}
+                    onClick={() => handlePick(choice.id)}
                     disabled={answered}
                     className="w-full flex items-center gap-3 rounded-2xl text-left"
                     style={{
-                      padding: '14px 16px',
-                      cursor: answered ? 'default' : 'pointer',
-                      transition: 'all 0.2s',
-                      border: 'none',
-                      ...getChoiceStyle(state),
+                      padding: '14px 16px', cursor: answered ? 'default' : 'pointer',
+                      transition: 'all 0.2s', border: 'none', ...getChoiceStyle(state),
                     }}
                   >
                     <span
@@ -356,7 +348,7 @@ export function QuizScreen() {
                       {state === 'correct' ? '✓' : state === 'wrong' ? '✗' : CHOICE_LABELS[i]}
                     </span>
                     <span style={{ flex: 1, fontSize: 16, color: '#1c1c1c', fontWeight: state === 'correct' || state === 'wrong' ? 700 : 500 }}>
-                      {choice.english_word}
+                      {choice.text}
                     </span>
                   </motion.button>
                 );
@@ -366,19 +358,19 @@ export function QuizScreen() {
         </div>
 
         {/* 하단 버튼 */}
-        <div className="flex-shrink-0 px-5 py-4 bg-white" style={{ borderTop: '1px solid #f0f0f0' }}>
+        <div className="flex-shrink-0 px-5 py-4 bg-white border-t border-surface-lighter">
           <button
             onClick={handleNext}
-            disabled={!answered}
+            disabled={!answered || isLoadingNext}
             className="w-full rounded-2xl py-4 flex items-center justify-center gap-2 active:scale-95 transition-transform"
             style={{
-              background: answered ? '#B8D0FA' : '#e5e7eb',
-              color: answered ? '#1c1c1c' : '#9ca3af',
+              background: answered && !isLoadingNext ? '#B8D0FA' : '#e5e7eb',
+              color: answered && !isLoadingNext ? '#1c1c1c' : '#9ca3af',
               fontSize: 16, fontWeight: 700, border: 'none',
-              cursor: answered ? 'pointer' : 'not-allowed',
+              cursor: answered && !isLoadingNext ? 'pointer' : 'not-allowed',
             }}
           >
-            {isLast ? '결과 보기' : '다음 문제'}
+            {isLoadingNext ? '로딩 중...' : '다음 문제'}
             <ChevronRight size={18} strokeWidth={2.5} />
           </button>
         </div>

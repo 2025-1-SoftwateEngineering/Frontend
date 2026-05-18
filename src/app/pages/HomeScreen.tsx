@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { BookOpen, Target, Flame, TrendingUp, ChevronRight } from 'lucide-react';
+import { BookOpen, Target, Flame, TrendingUp, ChevronRight, Gamepad2 } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 
@@ -129,6 +129,42 @@ export function HomeScreen() {
               <span className="text-xs text-brand-blue-dark font-semibold">{goal.count}</span>
             </div>
           ))}
+        </motion.div>
+
+        {/* 미니게임 */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+        >
+          <div className="flex items-center gap-2 mb-2.5">
+            <Gamepad2 size={16} color="#776A77" />
+            <h2 className="text-base font-bold text-text-main">미니게임</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => navigate('/choices')}
+              className="flex flex-col items-start gap-2 rounded-2xl p-4 active:scale-95 transition-transform bg-white shadow-sm"
+              style={{ border: '1px solid #F0F0F0' }}
+            >
+              <span className="text-2xl">🃏</span>
+              <div>
+                <p className="text-sm font-bold text-text-main">사지선다</p>
+                <p className="text-xs text-text-sub mt-0.5">단어 뜻 맞히기</p>
+              </div>
+            </button>
+            <button
+              onClick={() => navigate('/crosswords')}
+              className="flex flex-col items-start gap-2 rounded-2xl p-4 active:scale-95 transition-transform bg-white shadow-sm"
+              style={{ border: '1px solid #F0F0F0' }}
+            >
+              <span className="text-2xl">🧩</span>
+              <div>
+                <p className="text-sm font-bold text-text-main">십자말풀이</p>
+                <p className="text-xs text-text-sub mt-0.5">영단어 채워넣기</p>
+              </div>
+            </button>
+          </div>
         </motion.div>
 
         {/* Tips */}

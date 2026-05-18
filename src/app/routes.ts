@@ -18,6 +18,10 @@ import { VocabularyEditScreen } from './pages/VocabularyEditScreen';
 import { ProfileScreen } from './pages/ProfileScreen';
 import { ProfileEditScreen } from './pages/ProfileEditScreen';
 import FriendProfilePage from './pages/FriendProfilePage.tsx';
+import { ChoiceListScreen } from './pages/ChoiceListScreen';
+import { QuizScreen } from './pages/QuizScreen';
+import { CrosswordListScreen } from './pages/CrosswordListScreen';
+import { CrosswordScreen } from './pages/CrosswordScreen';
 
 export const router = createBrowserRouter([
   {
@@ -50,6 +54,10 @@ export const router = createBrowserRouter([
       { path: '/vocabulary/:bookId/edit', Component: VocabularyEditScreen },
       { path: '/profile/edit', Component: ProfileEditScreen },
       { path: '/friends/:memberId', Component: FriendProfilePage },
+      { path: '/choices', Component: ChoiceListScreen },
+      { path: '/choices/:choiceId', Component: QuizScreen },
+      { path: '/crosswords', Component: CrosswordListScreen },
+      { path: '/crosswords/:crosswordId', Component: CrosswordScreen },
     ],
   },
 ]);

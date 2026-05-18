@@ -238,3 +238,122 @@ export const vocaApi = {
     throw new Error('[vocaApi] deleteBook: /admin/v1/voca-books/{vocaId} 엔드포인트를 사용하세요.');
   },
 };
+
+// ─── Quiz API 타입 ─────────────────────────────────────────────────────────────
+
+interface CursorResult<T> {
+  data: T[];
+  nextCursor: string;
+  hasNext: boolean;
+  pageSize: number;
+}
+
+export interface ChoiceListItem {
+  id: number;
+  solvedCoin: number;
+  cnt: number;
+}
+
+export interface ChoiceOption {
+  id: number;
+  text: string;
+}
+
+export interface ChoiceQuestion {
+  id: number;
+  score: number;
+  question: string;
+  choices: ChoiceOption[];
+}
+
+export interface ChoiceSubmitResult {
+  isCorrect: boolean;
+  hasNext: boolean;
+  nextCurrent: number | null;
+  score: number;
+}
+
+export interface CrosswordListItem {
+  id: number;
+  solvedCoin: number;
+  cnt: number;
+}
+
+export type ClueDirection = 'ACROSS' | 'DOWN';
+
+export interface CrosswordClue {
+  id: number;
+  clueType: ClueDirection;
+  wordLength: number;
+  verticalStartPoint: number;
+  horizontalStartPoint: number;
+  clueDescription: string;
+}
+
+export interface CrosswordData {
+  N: number;
+  elements: CrosswordClue[];
+}
+
+export interface CrosswordSubmitResult {
+  isCorrect: boolean;
+  hasNext: boolean;
+  score: string | null;
+}
+
+// ─── Quiz API ─────────────────────────────────────────────────────────────────
+
+export const quizApi = {
+  // ── 사지선다 ──────────────────────────────────────────────────────────────
+  getChoiceList: async (): Promise<ChoiceListItem[]> => {
+    const res = await apiFetch<CursorResult<ChoiceListItem>>('/choices?pageSize=50', {}, API_URL);
+    return res.result?.data ?? [];
+  },
+
+  getChoiceQuestion: async (choiceId: number, current: number): Promise<ChoiceQuestion | null> => {
+    try {
+      const res = await apiFetch<ChoiceQuestion>(`/choices/${choiceId}?current=${current}`, {}, API_URL);
+      return res.result ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  submitChoiceAnswer: async (
+    choiceId: number,
+    answerId: number,
+    current: number,
+  ): Promise<ChoiceSubmitResult> => {
+    const res = await apiFetch<ChoiceSubmitResult>(
+      `/choices/${choiceId}/submit?answer=${answerId}&current=${current}`,
+      { method: 'POST' },
+      API_URL,
+    );
+    return res.result!;
+  },
+
+  // ── 십자말풀이 ────────────────────────────────────────────────────────────
+  getCrosswordList: async (): Promise<CrosswordListItem[]> => {
+    const res = await apiFetch<CursorResult<CrosswordListItem>>('/crosswords?pageSize=50', {}, API_URL);
+    return res.result?.data ?? [];
+  },
+
+  getCrossword: async (crosswordId: number): Promise<CrosswordData> => {
+    const res = await apiFetch<CrosswordData>(`/crosswords/${crosswordId}`, {}, API_URL);
+    return res.result!;
+  },
+
+  submitCrosswordAnswer: async (
+    crosswordId: number,
+    hintId: number,
+    answer: string,
+  ): Promise<CrosswordSubmitResult> => {
+    const params = new URLSearchParams({ crosswordHintId: String(hintId), answer });
+    const res = await apiFetch<CrosswordSubmitResult>(
+      `/crosswords/${crosswordId}/submit?${params}`,
+      { method: 'POST' },
+      API_URL,
+    );
+    return res.result!;
+  },
+};
