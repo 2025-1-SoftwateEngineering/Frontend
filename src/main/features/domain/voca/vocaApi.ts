@@ -1,4 +1,4 @@
-import { apiFetch, API_URL } from '../../../config/apiConfig';
+import { apiFetch, API_URL, ADMIN_URL } from '../../../config/apiConfig';
 import type { VocaBook, Word } from './types';
 
 // ─── 백엔드 응답 타입 ──────────────────────────────────────────────────────────
@@ -223,8 +223,24 @@ export const vocaApi = {
 
   // ─── 관리자 전용 엔드포인트 (admin API 사용) ─────────────────────────────────
 
-  createBook: async (_data: Omit<VocaBook, 'voca_id' | 'created_at'>): Promise<VocaBook> => {
-    throw new Error('[vocaApi] createBook: /admin/v1/ 엔드포인트를 사용하세요.');
+  createBook: async (data: Omit<VocaBook, 'voca_id' | 'created_at'>): Promise<VocaBook> => {
+    const body = [{ description: data.description ?? '', solvedCoin: data.solved_coin, level: 1 }];
+    const bookRes = await apiFetch<[{ id: number; addedAt: string }]>(
+      '/voca-books',
+      { method: 'POST', body: JSON.stringify(body) },
+      ADMIN_URL,
+    );
+    const vocaId = bookRes.result![0].id;
+
+    if (data.words.length > 0) {
+      await apiFetch(
+        '/words',
+        { method: 'POST', body: JSON.stringify(data.words.map(w => ({ english: w.english_word, meaning: w.meaning, vocabularyId: vocaId }))) },
+        ADMIN_URL,
+      );
+    }
+
+    return { ...data, voca_id: vocaId, created_at: bookRes.result![0].addedAt };
   },
 
   updateBook: async (
