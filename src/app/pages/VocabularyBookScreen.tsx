@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ChevronLeft, Edit2, Brain, ClipboardCheck } from 'lucide-react';
+import { ChevronLeft, Edit2, Brain, ClipboardCheck, Gamepad2 } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 import { vocaApi } from '../../main/features/domain/voca/vocaApi';
@@ -129,20 +129,29 @@ export function VocabularyBookScreen() {
         </div>
 
         {/* Bottom action buttons */}
-        <div className="flex-shrink-0 px-4 py-4 flex gap-3 bg-white border-t border-surface-lighter">
+        <div className="flex-shrink-0 px-4 py-4 flex flex-col gap-2 bg-white border-t border-surface-lighter">
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate(`/vocabulary/${book.voca_id}/memorize`)}
+              className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3.5 active:scale-95 transition-transform bg-brand-beige text-text-main font-semibold"
+            >
+              <Brain size={18} />
+              암기하기
+            </button>
+            <button
+              onClick={() => navigate(`/vocabulary/${book.voca_id}/test`)}
+              className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3.5 active:scale-95 transition-transform bg-brand-blue text-text-main font-semibold"
+            >
+              <ClipboardCheck size={18} />
+              테스트하기
+            </button>
+          </div>
           <button
-            onClick={() => navigate(`/vocabulary/${book.voca_id}/memorize`)}
-            className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3.5 active:scale-95 transition-transform bg-brand-beige text-text-main font-semibold"
+            onClick={() => navigate('/choices')}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 active:scale-95 transition-transform bg-brand-purple text-white font-semibold"
           >
-            <Brain size={18} />
-            암기하기
-          </button>
-          <button
-            onClick={() => navigate(`/vocabulary/${book.voca_id}/test`)}
-            className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3.5 active:scale-95 transition-transform bg-brand-blue text-text-main font-semibold"
-          >
-            <ClipboardCheck size={18} />
-            테스트하기
+            <Gamepad2 size={18} />
+            미니게임
           </button>
         </div>
       </div>
