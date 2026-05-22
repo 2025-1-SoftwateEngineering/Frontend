@@ -8,16 +8,19 @@ import { ForgotPasswordScreen } from './pages/ForgotPasswordScreen';
 import { RegisterScreen } from './pages/RegisterScreen';
 import { AppLayout } from './pages/AppLayout';
 import { HomeScreen } from './pages/HomeScreen';
-import { ShopScreen } from './pages/ShopScreen';
+import { ShopScreen } from './pages/ShopScreen.tsx';
 import { FriendsScreen } from './pages/FriendsScreen';
 import { VocabularyListScreen } from './pages/VocabularyListScreen';
 import { VocabularyBookScreen } from './pages/VocabularyBookScreen';
 import { WordTestScreen } from './pages/WordTestScreen';
 import { WordMemorizeScreen } from './pages/WordMemorizeScreen';
 import { VocabularyEditScreen } from './pages/VocabularyEditScreen';
-import { ProfileScreen } from './pages/ProfileScreen';
+import { ProfileScreen } from './pages/ProfileScreen.tsx';
 import { ProfileEditScreen } from './pages/ProfileEditScreen';
 import FriendProfilePage from './pages/FriendProfilePage.tsx';
+import { PetScreen } from './pages/PetScreen.tsx';
+import { PetProfileEditScreen } from './pages/PetProfileEditScreen.tsx';
+
 
 export const router = createBrowserRouter([
   {
@@ -50,6 +53,8 @@ export const router = createBrowserRouter([
       { path: '/vocabulary/:bookId/edit', Component: VocabularyEditScreen },
       { path: '/profile/edit', Component: ProfileEditScreen },
       { path: '/friends/:memberId', Component: FriendProfilePage },
+      { path: '/pet', Component: PetScreen },
+      { path: '/pet/edit', Component: PetProfileEditScreen }
     ],
   },
 ]);
