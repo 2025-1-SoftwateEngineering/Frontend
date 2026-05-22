@@ -18,9 +18,16 @@ import { VocabularyEditScreen } from './pages/VocabularyEditScreen';
 import { ProfileScreen } from './pages/ProfileScreen.tsx';
 import { ProfileEditScreen } from './pages/ProfileEditScreen';
 import FriendProfilePage from './pages/FriendProfilePage.tsx';
+<<<<<<< HEAD
 import { PetScreen } from './pages/PetScreen.tsx';
 import { PetProfileEditScreen } from './pages/PetProfileEditScreen.tsx';
 
+=======
+import { ChoiceListScreen } from './pages/ChoiceListScreen';
+import { QuizScreen } from './pages/QuizScreen';
+import { CrosswordListScreen } from './pages/CrosswordListScreen';
+import { CrosswordScreen } from './pages/CrosswordScreen';
+>>>>>>> 801b6f54a54d8cf0f212db75a86c481b9fe0d9dc
 
 export const router = createBrowserRouter([
   {
@@ -53,8 +60,15 @@ export const router = createBrowserRouter([
       { path: '/vocabulary/:bookId/edit', Component: VocabularyEditScreen },
       { path: '/profile/edit', Component: ProfileEditScreen },
       { path: '/friends/:memberId', Component: FriendProfilePage },
+<<<<<<< HEAD
       { path: '/pet', Component: PetScreen },
       { path: '/pet/edit', Component: PetProfileEditScreen }
+=======
+      { path: '/choices', Component: ChoiceListScreen },
+      { path: '/choices/:choiceId', Component: QuizScreen },
+      { path: '/crosswords', Component: CrosswordListScreen },
+      { path: '/crosswords/:crosswordId', Component: CrosswordScreen },
+>>>>>>> 801b6f54a54d8cf0f212db75a86c481b9fe0d9dc
     ],
   },
 ]);

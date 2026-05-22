@@ -12,12 +12,20 @@ interface WordRow {
   word_id?: number;
   english_word: string;
   meaning: string;
+  example: string;
+}
+
+function parseVocaDesc(desc?: string) {
+  const parts = (desc ?? '').split('|||');
+  if (parts.length === 3) return { name: parts[0], category: parts[1], description: parts[2] };
+  return { name: desc ?? '', category: '', description: '' };
 }
 
 const makeRow = (): WordRow => ({
   rowId: `row-${Date.now()}-${Math.random()}`,
   english_word: '',
   meaning: '',
+  example: '',
 });
 
 export function VocabularyEditScreen() {
@@ -25,8 +33,9 @@ export function VocabularyEditScreen() {
   const navigate = useNavigate();
   const isEdit = !!bookId && bookId !== 'create';
 
-  const [level, setLevel] = useState(1);
-  const [solvedCoin, setSolvedCoin] = useState(0);
+  const [name, setName] = useState('');
+  const [bookDesc, setBookDesc] = useState('');
+  const [category, setCategory] = useState('');
   const [rows, setRows] = useState<WordRow[]>([makeRow()]);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
@@ -35,23 +44,28 @@ export function VocabularyEditScreen() {
 
   useEffect(() => {
     if (!isEdit) return;
-    vocaApi.getBook(Number(bookId))
-      .then((book) => {
-        setLevel(book.level);
-        setSolvedCoin(book.solved_coin);
-        setRows(
-          book.words.map((w: Word) => ({
-            rowId: `row-${w.word_id}`,
-            word_id: w.word_id,
-            english_word: w.english_word,
-            meaning: w.meaning,
-          }))
-        );
-      })
-      .finally(() => setLoading(false));
+    Promise.all([
+      vocaApi.getBook(Number(bookId)),
+      vocaApi.getBooks(),
+    ]).then(([book, allBooks]) => {
+      const meta = allBooks.find((b) => b.voca_id === Number(bookId));
+      const parsed = parseVocaDesc(meta?.description);
+      setName(parsed.name);
+      setCategory(parsed.category);
+      setBookDesc(parsed.description);
+      setRows(
+        book.words.map((w: Word) => ({
+          rowId: `row-${w.word_id}`,
+          word_id: w.word_id,
+          english_word: w.english_word,
+          meaning: w.meaning,
+          example: '',
+        }))
+      );
+    }).finally(() => setLoading(false));
   }, [bookId, isEdit]);
 
-  const updateRow = (rowId: string, field: keyof Omit<WordRow, 'rowId' | 'word_id'>, value: string) => {
+  const updateRow = (rowId: string, field: 'english_word' | 'meaning' | 'example', value: string) => {
     setRows((prev) => prev.map((r) => r.rowId === rowId ? { ...r, [field]: value } : r));
   };
 
@@ -66,7 +80,8 @@ export function VocabularyEditScreen() {
 
   const handleSave = async () => {
     setError('');
-    if (level < 1) { setError('레벨은 1 이상이어야 합니다.'); return; }
+    if (!name.trim()) { setError('단어장 이름을 입력해주세요.'); return; }
+    if (!category.trim()) { setError('카테고리를 입력해주세요.'); return; }
 
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
@@ -93,10 +108,12 @@ export function VocabularyEditScreen() {
         meaning: r.meaning.trim(),
       }));
 
+      const description = `${name.trim()}|||${category.trim()}|||${bookDesc.trim()}`;
+
       if (isEdit) {
-        await vocaApi.updateBook(Number(bookId), { level, solved_coin: solvedCoin, words });
+        await vocaApi.updateBook(Number(bookId), { level: 1, solved_coin: 0, words, description });
       } else {
-        await vocaApi.createBook({ level, solved_coin: solvedCoin, words });
+        await vocaApi.createBook({ level: 1, solved_coin: 0, words, description });
       }
       navigate('/vocabulary');
     } catch (e: any) {
@@ -163,35 +180,42 @@ export function VocabularyEditScreen() {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5">
-          {/* 단어장 메타 정보 */}
+          {/* 단어장 정보 */}
           <div className="rounded-2xl p-4 flex flex-col gap-3 bg-white shadow-sm">
             <p className="text-[13px] font-bold text-text-main mb-0.5">단어장 정보</p>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="text-xs text-text-sub block mb-1">레벨 (level) *</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={level}
-                  onChange={(e) => setLevel(Number(e.target.value))}
-                  placeholder="1"
-                  className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs text-text-sub block mb-1">완료 보상 코인 (solved_coin)</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={solvedCoin}
-                  onChange={(e) => setSolvedCoin(Number(e.target.value))}
-                  placeholder="0"
-                  className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
-                />
-              </div>
+
+            <div>
+              <label className="text-xs text-text-sub block mb-1">단어장 이름 *</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="예: TOEIC 필수 단어 Vol.4"
+                className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-text-sub block mb-1">설명</label>
+              <input
+                value={bookDesc}
+                onChange={(e) => setBookDesc(e.target.value)}
+                placeholder="단어장에 대한 간단한 설명"
+                className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-text-sub block mb-1">카테고리 *</label>
+              <input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="예: 동사, 명사, 비즈니스..."
+                className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
+              />
             </div>
           </div>
 
+          {/* 단어 목록 */}
           <div>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[13px] font-bold text-text-main">단어 목록 ({rows.length}개)</p>
@@ -228,11 +252,9 @@ export function VocabularyEditScreen() {
                       </button>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mb-2">
                       <div className="flex-1">
-                        <label className="text-[11px] text-text-sub block mb-1">
-                          영어 단어 (english_word) *
-                        </label>
+                        <label className="text-[11px] text-text-sub block mb-1">영어 단어 *</label>
                         <input
                           value={row.english_word}
                           onChange={(e) => updateRow(row.rowId, 'english_word', e.target.value)}
@@ -250,9 +272,7 @@ export function VocabularyEditScreen() {
                         )}
                       </div>
                       <div className="flex-1">
-                        <label className="text-[11px] text-text-sub block mb-1">
-                          뜻 (meaning) *
-                        </label>
+                        <label className="text-[11px] text-text-sub block mb-1">뜻 (한국어) *</label>
                         <input
                           value={row.meaning}
                           onChange={(e) => updateRow(row.rowId, 'meaning', e.target.value)}
@@ -260,6 +280,16 @@ export function VocabularyEditScreen() {
                           className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
                         />
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] text-text-sub block mb-1">예문 (선택)</label>
+                      <input
+                        value={row.example}
+                        onChange={(e) => updateRow(row.rowId, 'example', e.target.value)}
+                        placeholder="예: She managed to accomplish all her goals."
+                        className="w-full px-3 py-[11px] rounded-[10px] border border-[#e5e7eb] text-sm outline-none bg-surface-input text-text-main"
+                      />
                     </div>
                   </motion.div>
                 ))}

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { BookOpen, Target, Flame, TrendingUp, ChevronRight } from 'lucide-react';
+import { BookOpen, Target, Flame, TrendingUp, ChevronRight, PawPrint } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 
@@ -131,17 +131,25 @@ export function HomeScreen() {
           ))}
         </motion.div>
 
-        {/* Tips */}
+{/* 애완동물 */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="rounded-2xl p-4 bg-brand-peach"
         >
-          <p className="text-xs text-brand-purple font-semibold mb-1">💡 학습 팁</p>
-          <p className="text-[13px] text-text-main leading-[1.7]">
-            암기한 단어는 테스트로 확인하세요. 직접 스펠링을 쓰면 기억에 훨씬 오래 남아요!
-          </p>
+          <button
+            onClick={() => navigate('/pet')}
+            className="w-full flex items-center gap-4 rounded-2xl p-4 active:scale-98 transition-transform bg-brand-peach shadow-sm"
+          >
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/50">
+              <PawPrint size={24} color="#776A77" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="font-bold text-text-main text-[15px]">애완동물</p>
+              <p className="text-xs text-text-main/65 mt-0.5">나의 학습 친구를 만나보세요</p>
+            </div>
+            <ChevronRight size={20} color="#776A77" />
+          </button>
         </motion.div>
       </div>
     </div>

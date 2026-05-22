@@ -1,19 +1,20 @@
 // ============================================================
 //  ★ Firebase 설정값은 여기 한 곳만 수정하면 됩니다 ★
-//  백엔드에서 제공받은 값으로 아래 플레이스홀더(firebaseConfig)를 교체하세요.
+//  백엔드 팀에서 제공받은 값으로 아래 플레이스홀더를 교체하세요.
 // ============================================================
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getMessaging, getToken, type Messaging } from 'firebase/messaging';
-import { apiFetch } from './apiConfig';
+import { apiFetch, API_URL } from './apiConfig';
 
 const firebaseConfig = {
-  apiKey:            'AIzaSyC6mFrSXdyKG-hrzreQEcskt88r31HEHgA',        // ← 교체
-  authDomain:        'project-9afb2849-a8f7-481e-a41.firebaseapp.com',    // ← 교체
-  projectId:         'project-9afb2849-a8f7-481e-a41',     // ← 교체
-  storageBucket:     'project-9afb2849-a8f7-481e-a41.firebasestorage.app', // ← 교체
-  messagingSenderId: '14062205846', // ← 교체
-  appId:             '1:14062205846:web:04eb325b56063459147bb7',         // ← 교체
-  measurementId:     'G-QHM8KX0VTW', // ← 교체
+  apiKey:            '',        // ← 교체
+  authDomain:        '',    // ← 교체
+  projectId:         '',     // ← 교체
+  storageBucket:     '', // ← 교체
+  messagingSenderId: '', // ← 교체
+  appId:             '',         // ← 교체
+  measurementId:     '', // ← 교체 (선택)
+
 };
 
 // 중복 초기화 방지
@@ -62,7 +63,7 @@ export async function registerFcmToken(vapidKey: string = '[FIREBASE_VAPID_KEY]'
     await apiFetch('/fcm', {
       method: 'POST',
       body:   JSON.stringify({ fcmToken }),
-    });
+    }, API_URL);
 
     console.info('[Firebase] FCM 토큰이 백엔드에 등록되었습니다.');
   } catch (err) {
