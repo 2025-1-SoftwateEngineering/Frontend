@@ -34,10 +34,9 @@ export interface FriendProfile {
   username: string;
   nickname: string;
   profileImageUrl?: string;
-  level: number;
-  experience: number;
   totalWordsLearned: number;
   streakDays: number;
+  coin: number;
   isBlocked: boolean;
   status: FriendStatus;
 }

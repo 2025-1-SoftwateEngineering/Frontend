@@ -15,11 +15,12 @@ interface FriendRequestResult {
 }
 
 interface FriendProfileResult {
-  id:       number;
-  nickname: string;
-  streak:   number;
-  coin:     number;
-  loginAt:  string;
+  id:                 number;
+  nickname:           string;
+  totalWordsLearned?: number;
+  streak:             number;
+  coin:               number;
+  loginAt:            string;
 }
 
 interface FriendStateResult {

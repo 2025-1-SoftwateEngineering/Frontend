@@ -15,13 +15,10 @@ function getLevelTitle(level: number) {
 
 export function ProfileScreen() {
   const { currentUser, logout } = useAuth();
-  const { totalExp, level, progress } = useProgress();
+  const { level, progress } = useProgress();
   const navigate = useNavigate();
 
   if (!currentUser) return null;
-
-  const expInLevel = totalExp % 100;
-  const expToNext = 100;
   const totalLearned = Object.values(progress).reduce((acc, p) => acc + p.learnedWordIds.length, 0);
   const totalTests = Object.values(progress).reduce((acc, p) => acc + p.testResults.length, 0);
   const bestScore = Object.values(progress)
@@ -84,7 +81,7 @@ export function ProfileScreen() {
           <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded-xl bg-white/20">
             <span className="text-base">🔥</span>
             <div>
-              <p className="text-[10px] text-white/75">연속 학습</p>
+              <p className="text-[10px] text-white/75">누적 학습</p>
               <p className="text-[15px] font-bold text-white">{currentUser.streak}일</p>
             </div>
           </div>
@@ -99,19 +96,19 @@ export function ProfileScreen() {
 
         <div className="mt-4 p-3 rounded-2xl bg-white/20">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-white/85 font-semibold">경험치</span>
-            <span className="text-xs text-white/85">{expInLevel} / {expToNext} XP</span>
+            <span className="text-xs text-white/85 font-semibold">이번 주 연속 학습</span>
+            <span className="text-xs text-white/85">{currentUser.streak} / 7일</span>
           </div>
           <div className="bg-white/25 rounded-full h-2 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
-              animate={{ width: `${expInLevel}%` }}
+              animate={{ width: `${Math.min((currentUser.streak / 7) * 100, 100)}%` }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="h-full bg-white rounded-full"
             />
           </div>
           <p className="text-[11px] text-white/70 mt-1 text-right">
-            다음 레벨까지 {expToNext - expInLevel} XP
+            이번 주 {Math.max(7 - currentUser.streak, 0)}일 남음
           </p>
         </div>
       </div>

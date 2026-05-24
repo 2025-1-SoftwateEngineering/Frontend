@@ -38,7 +38,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (hasToken) {
         try {
-          // /members/me 가 profileUrl을 반환하지 않으므로 localStorage 값을 fallback으로 전달
           const member = await authApi.getMyProfile(storedMember?.profileUrl);
           setCurrentUser(member);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(member));

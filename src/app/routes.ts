@@ -20,6 +20,7 @@ import { ProfileEditScreen } from './pages/ProfileEditScreen';
 import FriendProfilePage from './pages/FriendProfilePage.tsx';
 import { PetScreen } from './pages/PetScreen.tsx';
 import { PetProfileEditScreen } from './pages/PetProfileEditScreen.tsx';
+import { MiniGameSelectScreen } from './pages/MiniGameSelectScreen';
 import { ChoiceListScreen } from './pages/ChoiceListScreen';
 import { QuizScreen } from './pages/QuizScreen';
 import { CrosswordListScreen } from './pages/CrosswordListScreen';
@@ -58,6 +59,7 @@ export const router = createBrowserRouter([
       { path: '/friends/:memberId', Component: FriendProfilePage },
       { path: '/pet', Component: PetScreen },
       { path: '/pet/edit', Component: PetProfileEditScreen },
+      { path: '/minigames', Component: MiniGameSelectScreen },
       { path: '/choices', Component: ChoiceListScreen },
       { path: '/choices/:choiceId', Component: QuizScreen },
       { path: '/crosswords', Component: CrosswordListScreen },

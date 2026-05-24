@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { ChevronLeft, Edit2, Brain, ClipboardCheck, Gamepad2 } from 'lucide-react';
+
+function parseVocaDesc(desc?: string) {
+  const parts = (desc ?? '').split('|||');
+  if (parts.length === 3) return parts[0];
+  return desc || '';
+}
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 import { vocaApi } from '../../main/features/domain/voca/vocaApi';
@@ -50,6 +56,7 @@ export function VocabularyBookScreen() {
   const progress = book.words.length > 0
     ? Math.round((learnedCount / book.words.length) * 100)
     : 0;
+  const bookName = parseVocaDesc(book.description);
 
   return (
     <MobileLayout>
@@ -62,7 +69,7 @@ export function VocabularyBookScreen() {
             </button>
             <div className="flex-1 min-w-0">
               <h1 className="truncate text-lg font-bold text-text-main">
-                Lv.{book.level} 단어장 #{book.voca_id}
+                {bookName || `단어장 #${book.voca_id}`}
               </h1>
               <p className="text-xs text-text-sub">
                 {book.words.length}개 단어 · 암기 {progress}% · 🪙 {book.solved_coin} 코인
@@ -147,7 +154,7 @@ export function VocabularyBookScreen() {
             </button>
           </div>
           <button
-            onClick={() => navigate('/choices')}
+            onClick={() => navigate('/minigames')}
             className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 active:scale-95 transition-transform bg-brand-purple text-white font-semibold"
           >
             <Gamepad2 size={18} />

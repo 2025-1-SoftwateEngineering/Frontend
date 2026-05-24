@@ -5,6 +5,8 @@ import { ChevronLeft, Check, X } from 'lucide-react';
 import { MobileLayout } from '../components/MobileLayout';
 import { quizApi } from '../../main/features/domain/voca/vocaApi';
 import type { CrosswordData, CrosswordClue } from '../../main/features/domain/voca/vocaApi';
+import { storeApi } from '../../main/features/domain/store/storeApi';
+import type { MyItemInfo } from '../../main/features/domain/store/storeApi';
 
 type ClueStatus = 'idle' | 'correct' | 'wrong';
 type Phase = 'loading' | 'puzzle' | 'complete';
@@ -23,12 +25,36 @@ export function CrosswordScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [hintItems, setHintItems] = useState<MyItemInfo[]>([]);
+  const [cellHints, setCellHints] = useState<Record<string, string>>({});
+
   useEffect(() => {
     if (!crosswordId) return;
     quizApi.getCrossword(Number(crosswordId))
       .then((d) => { setData(d); setPhase('puzzle'); })
       .catch(() => setPhase('puzzle'));
+    storeApi.getMyItems().then((res) => {
+      setHintItems(res.items.filter(i =>
+        i.item.itemType === 'CROSSWORD_HINT_START' || i.item.itemType === 'CROSSWORD_HINT_MIDDLE'
+      ));
+    }).catch(() => {});
   }, [crosswordId]);
+
+  const handleUseHint = async (item: MyItemInfo) => {
+    if (!selectedClue) return;
+    try {
+      const result = await storeApi.useItem(item.item.itemId, selectedClue.id);
+      if (result.hintResult) {
+        const key = `${result.hintResult.verticalStartPoint},${result.hintResult.horizontalStartPoint}`;
+        setCellHints(prev => ({ ...prev, [key]: result.hintResult!.letter.toUpperCase() }));
+      }
+      setHintItems(prev => prev.map(i =>
+        i.item.itemId === item.item.itemId ? { ...i, count: i.count - 1 } : i
+      ));
+    } catch {
+      // 이미 사용했거나 진행 중 아닌 경우 무시
+    }
+  };
 
   const selectedClue = data?.elements.find((e) => e.id === selectedId) ?? null;
   const solvedCount  = Object.values(clueStatuses).filter((s) => s === 'correct').length;
@@ -40,9 +66,9 @@ export function CrosswordScreen() {
     const { N, elements } = data;
     const size = Math.max(20, Math.min(34, Math.floor(296 / N)));
 
-    const cells: { active: boolean; letter: string; highlighted: boolean }[][] =
+    const cells: { active: boolean; letter: string; highlighted: boolean; isHint: boolean }[][] =
       Array.from({ length: N }, () =>
-        Array.from({ length: N }, () => ({ active: false, letter: '', highlighted: false }))
+        Array.from({ length: N }, () => ({ active: false, letter: '', highlighted: false, isHint: false }))
       );
 
     const nums: Record<string, number> = {};
@@ -58,7 +84,12 @@ export function CrosswordScreen() {
         const col = elem.clueType === 'ACROSS' ? elem.horizontalStartPoint + k : elem.horizontalStartPoint;
         if (row < N && col < N) {
           cells[row][col].active = true;
-          if (answer[k]) cells[row][col].letter = answer[k].toUpperCase();
+          if (answer[k]) {
+            cells[row][col].letter = answer[k].toUpperCase();
+          } else if (cellHints[`${row},${col}`]) {
+            cells[row][col].letter = cellHints[`${row},${col}`];
+            cells[row][col].isHint = true;
+          }
         }
       }
     }
@@ -76,7 +107,7 @@ export function CrosswordScreen() {
     }
 
     return { gridCells: cells, clueNumbers: nums, cellSize: size };
-  }, [data, solvedAnswers, selectedId]);
+  }, [data, solvedAnswers, selectedId, cellHints]);
 
   const handleSelectClue = (clue: CrosswordClue) => {
     if (clueStatuses[clue.id] === 'correct') return;
@@ -233,7 +264,8 @@ export function CrosswordScreen() {
                         {cell.active && cell.letter && (
                           <span style={{
                             fontSize: Math.max(10, cellSize * 0.45),
-                            fontWeight: 700, color: '#1c1c1c',
+                            fontWeight: 700,
+                            color: cell.isHint ? '#3b82f6' : '#1c1c1c',
                           }}>
                             {cell.letter}
                           </span>
@@ -332,6 +364,23 @@ export function CrosswordScreen() {
               <p className="text-xs font-semibold mb-2" style={{ color: '#f87171' }}>
                 오답입니다. 다시 시도해보세요.
               </p>
+            )}
+            {hintItems.some(i => i.count > 0) && (
+              <div className="flex gap-2 mb-2">
+                {hintItems.filter(i => i.count > 0).map(item => (
+                  <button
+                    key={item.item.itemId}
+                    onClick={() => handleUseHint(item)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold"
+                    style={{ background: '#eff6ff', border: '1px solid #93c5fd', color: '#2563eb' }}
+                  >
+                    🔍 {item.item.itemType === 'CROSSWORD_HINT_START' ? '첫 글자' : '중간 글자'}
+                    <span style={{ background: '#3b82f6', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: 10 }}>
+                      {item.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
             )}
             <div className="flex gap-2">
               <input

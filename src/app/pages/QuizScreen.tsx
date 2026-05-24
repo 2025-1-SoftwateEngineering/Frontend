@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Clock, Star } from 'lucide-react';
 import { quizApi } from '../../main/features/domain/voca/vocaApi';
 import type { ChoiceQuestion } from '../../main/features/domain/voca/vocaApi';
+import { storeApi } from '../../main/features/domain/store/storeApi';
+import type { MyItemInfo } from '../../main/features/domain/store/storeApi';
 import { MobileLayout } from '../components/MobileLayout';
 
 const INIT_SECONDS = 10;
@@ -61,6 +63,8 @@ export function QuizScreen() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submitResultRef = useRef<{ hasNext: boolean; nextCurrent: number | null } | null>(null);
 
+  const [timeItems, setTimeItems] = useState<MyItemInfo[]>([]);
+
   const isTimeWarning = timer <= WARN_SECONDS;
 
   const loadQuestion = useCallback(async (current: number) => {
@@ -82,7 +86,25 @@ export function QuizScreen() {
 
   useEffect(() => {
     loadQuestion(0);
+    storeApi.getMyItems().then((res) => {
+      setTimeItems(res.items.filter(i =>
+        i.item.itemType === 'CHOICE_TIME_10' || i.item.itemType === 'CHOICE_TIME_30'
+      ));
+    }).catch(() => {});
   }, [loadQuestion]);
+
+  const handleUseTimeItem = async (item: MyItemInfo) => {
+    try {
+      await storeApi.useItem(item.item.itemId);
+      const bonus = item.item.itemType === 'CHOICE_TIME_10' ? 10 : 30;
+      setTimer(t => t + bonus);
+      setTimeItems(prev => prev.map(i =>
+        i.item.itemId === item.item.itemId ? { ...i, count: i.count - 1 } : i
+      ));
+    } catch {
+      // 이미 활성화된 경우 등 무시
+    }
+  };
 
   const startTimer = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -359,6 +381,24 @@ export function QuizScreen() {
 
         {/* 하단 버튼 */}
         <div className="flex-shrink-0 px-5 py-4 bg-white border-t border-surface-lighter">
+          {!answered && timeItems.some(i => i.count > 0) && (
+            <div className="flex gap-2 mb-3">
+              {timeItems.filter(i => i.count > 0).map(item => (
+                <button
+                  key={item.item.itemId}
+                  onClick={() => handleUseTimeItem(item)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
+                  style={{ background: '#fff3f3', border: '1px solid #fca5a5', color: '#dc2626' }}
+                >
+                  <Clock size={13} />
+                  +{item.item.itemType === 'CHOICE_TIME_10' ? 10 : 30}초
+                  <span style={{ background: '#f87171', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: 10 }}>
+                    {item.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
           <button
             onClick={handleNext}
             disabled={!answered || isLoadingNext}

@@ -8,11 +8,10 @@ const GREETINGS = ['안녕하세요', '반갑습니다', '오늘도 화이팅'];
 
 export function HomeScreen() {
   const { currentUser } = useAuth();
-  const { totalExp, level, progress } = useProgress();
+  const { progress } = useProgress();
   const navigate = useNavigate();
 
   const greeting = GREETINGS[new Date().getHours() % GREETINGS.length];
-  const expInLevel = totalExp % 100;
   const totalBooks = 3;
   const totalTested = Object.values(progress).filter((p) => p.testResults.length > 0).length;
   const totalLearned = Object.values(progress).reduce((acc, p) => acc + p.learnedWordIds.length, 0);
@@ -44,18 +43,18 @@ export function HomeScreen() {
           className="flex items-center gap-2 mt-4 p-3 rounded-2xl bg-white/25"
         >
           <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white">
-            <span className="text-lg">⭐</span>
+            <span className="text-lg">🔥</span>
           </div>
           <div>
-            <p className="text-[11px] text-white/80">현재 레벨</p>
-            <p className="text-base font-bold text-white">Lv.{level} · {totalExp} XP</p>
+            <p className="text-[11px] text-white/80">이번 주 연속 학습</p>
+            <p className="text-base font-bold text-white">{streak}일 / 7일</p>
           </div>
           <div className="flex-1">
             <div className="bg-white/30 rounded-full h-1.5 overflow-hidden mt-0.5">
-              <div style={{ width: `${expInLevel}%` }} className="h-full bg-white rounded-full" />
+              <div style={{ width: `${Math.min((streak / 7) * 100, 100)}%` }} className="h-full bg-white rounded-full" />
             </div>
             <p className="text-[10px] text-white/75 mt-0.5 text-right">
-              {expInLevel}/100 XP
+              {streak}/7일
             </p>
           </div>
         </motion.div>
@@ -65,7 +64,7 @@ export function HomeScreen() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { icon: <Flame size={20} color="#FF6B35" />, value: `${streak}일`, label: '연속 학습' },
+            { icon: <Flame size={20} color="#FF6B35" />, value: `${streak}일`, label: '누적 학습' },
             { icon: <BookOpen size={20} color="#94B9F3" />, value: `${totalLearned}개`, label: '암기 완료' },
             { icon: <Target size={20} color="#776A77" />, value: `${totalTested}/${totalBooks}`, label: '테스트 완료' },
           ].map((stat) => (

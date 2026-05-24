@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ChevronLeft, ShieldBan, ShieldOff, UserMinus, UserPlus,
-  BookOpen, Flame, Trophy, Loader2, ShieldAlert } from 'lucide-react';
+  BookOpen, Flame, Coins, Loader2, ShieldAlert } from 'lucide-react';
 import type { FriendProfile } from '@/main/features/domain/friend';
 import { sendFriendRequest, deleteFriend, blockUser, unblockUser } from '@/main/features/domain/friend';
 import { memberApi } from '@/main/features/domain/member/memberApi';
@@ -27,10 +27,9 @@ const FriendProfilePage: React.FC = () => {
           username: '',
           nickname: res.nickname,
           profileImageUrl: undefined,
-          level: 1,
-          experience: 0,
-          totalWordsLearned: 0,
+          totalWordsLearned: res.totalWordsLearned ?? 0,
           streakDays: res.streak,
+          coin: res.coin,
           isBlocked: false,
           status: 'FRIEND',
         });
@@ -86,20 +85,20 @@ const FriendProfilePage: React.FC = () => {
         <div className="flex-1 flex flex-col pb-8">
           <div className="mx-4 mt-4 bg-white rounded-3xl p-6 shadow-sm flex flex-col items-center gap-3 border border-surface-lighter">
             <FriendAvatar nickname={profile.nickname} profileImageUrl={profile.profileImageUrl}
-              size="lg" level={profile.level} />
+              size="lg" />
             <div className="text-center">
               <h2 className="text-xl font-bold text-text-main">{profile.nickname}</h2>
               <p className="text-[13px] text-text-sub mt-0.5">{profile.username}</p>
             </div>
             <div className="w-full mt-1">
               <div className="flex justify-between mb-1 text-[11px] text-text-sub">
-                <span>Lv.{profile.level}</span>
-                <span>{profile.experience % 100} / 100 XP</span>
+                <span>이번 주 연속 학습</span>
+                <span>{profile.streakDays} / 7일</span>
               </div>
               <div className="w-full h-2 rounded-full overflow-hidden bg-surface-lighter">
                 <div
                   className="h-full rounded-full transition-all gradient-brand"
-                  style={{ width: `${profile.experience % 100}%` }}
+                  style={{ width: `${Math.min((profile.streakDays / 7) * 100, 100)}%` }}
                 />
               </div>
             </div>
@@ -108,7 +107,7 @@ const FriendProfilePage: React.FC = () => {
           <div className="mx-4 mt-3 grid grid-cols-3 gap-2.5">
             <StatCard icon={<BookOpen size={18} color="#94B9F3" />} value={profile.totalWordsLearned} label="학습한 단어" />
             <StatCard icon={<Flame size={18} color="#fb923c" />} value={profile.streakDays} label="연속 학습일" />
-            <StatCard icon={<Trophy size={18} color="#94B9F3" />} value={`Lv.${profile.level}`} label="현재 레벨" />
+            <StatCard icon={<Coins size={18} color="#DDDEA5" />} value={profile.coin.toLocaleString()} label="보유 코인" />
           </div>
 
           <div className="mx-4 mt-4 flex flex-col gap-2">
