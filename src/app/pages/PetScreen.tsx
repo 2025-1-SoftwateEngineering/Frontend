@@ -1,28 +1,33 @@
-import { useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Droplets, Utensils, ChevronLeft, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import bgDefault from '../assets/bg_default.png';
-import petLv1 from '../assets/pet_lv1.png';
+import bgDefault from '../assets/BG_BG01_type1_1.png';
+import bgLeaf from '../assets/BG_BG07_Leaf_1.png';
+import petEgg from '../assets/pet_PE_Egg_1.png';
+import petBaby from '../assets/pet_PB_Baby_1.png';
+import petGrowing from '../assets/pet_PGI_Growing_1.png';
+import petGrown from '../assets/pet_PG_Grown_1.png';
+import type { PetStage } from '../../main/features/domain/pet/types';
+import { petApi } from '../../main/features/domain/pet/petApi';
+import type { PetInfo } from '../../main/features/domain/pet/petApi';
+import { storeApi } from '../../main/features/domain/store/storeApi';
 
-const PET_IMAGES: Record<number, string> = {
-  1: petLv1,
+const PET_BG_IMAGE: Partial<Record<string, string>> = {
+  PET_BG_1: bgDefault,
+  PET_BG_2: bgLeaf,
 };
 
-function getPetImage(level: number): string {
-  return PET_IMAGES[level] ?? petLv1;
+const MAX_HUNGER   = 250;
+const MAX_THIRST   = 100;
+const REQUIRED_EXP = 200;
+
+function getPetImage(stage: PetStage): string {
+  if (stage === 'EGG')     return petEgg;
+  if (stage === 'BABY')    return petBaby;
+  if (stage === 'GROWING') return petGrowing;
+  return petGrown;
 }
-
-const MAX_HUNGER = 250;
-const MAX_THIRST = 100;
-
-const DUMMY_PET = {
-  level: 1,
-  currentExp: 40,
-  requiredExp: 100,
-  hunger: 180,
-  thirst: 60,
-};
 
 function getHungerColor(pct: number) {
   if (pct > 66) return '#FF6B6B';
@@ -37,13 +42,95 @@ function getThirstColor(pct: number) {
 }
 
 export function PetScreen() {
-  const [pet] = useState(DUMMY_PET);
-  const [bgImage] = useState<string>(bgDefault);
-  const navigate = useNavigate();
+  const [petInfo,         setPetInfo]         = useState<PetInfo | null>(null);
+  const [petFoodItemId,   setPetFoodItemId]   = useState<number | null>(null);
+  const [petWaterItemId,  setPetWaterItemId]  = useState<number | null>(null);
+  const [loading,         setLoading]         = useState(true);
+  const [error,           setError]           = useState('');
+  const [actionLoading,   setActionLoading]   = useState(false);
+  const navigate  = useNavigate();
 
-  const hungerPct = (pet.hunger / MAX_HUNGER) * 100;
-  const thirstPct = (pet.thirst / MAX_THIRST) * 100;
-  const expPct    = (pet.currentExp / pet.requiredExp) * 100;
+  const fetchAll = useCallback(async () => {
+    try {
+      let pet: PetInfo;
+      try {
+        pet = await petApi.getMyPet();
+      } catch {
+        // 펫이 없으면 자동 생성 (최초 접속)
+        try {
+          pet = await petApi.createPet();
+        } catch {
+          // createPet도 실패하면 다시 조회 시도
+          pet = await petApi.getMyPet();
+        }
+      }
+      setPetInfo(pet);
+
+      // 스토어 실패해도 펫 화면은 표시
+      try {
+        const itemList = await storeApi.getItems();
+        const food  = itemList.items.find(i => i.itemType === 'PET_FOOD');
+        const water = itemList.items.find(i => i.itemType === 'PET_WATER');
+        if (food)  setPetFoodItemId(food.itemId);
+        if (water) setPetWaterItemId(water.itemId);
+      } catch { /* 먹이/물 버튼만 비활성화됨 */ }
+    } catch {
+      setError('펫 정보를 불러올 수 없어요');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const handleFeed = async () => {
+    if (!petFoodItemId || !petInfo || petInfo.foodCount === 0 || actionLoading) return;
+    setActionLoading(true);
+    try {
+      await storeApi.useItem(petFoodItemId);
+      const updated = await petApi.getMyPet();
+      setPetInfo(updated);
+    } catch { /* 잔액 부족 등 - 무시 */ }
+    finally { setActionLoading(false); }
+  };
+
+  const handleWater = async () => {
+    if (!petWaterItemId || !petInfo || petInfo.waterCount === 0 || actionLoading) return;
+    setActionLoading(true);
+    try {
+      await storeApi.useItem(petWaterItemId);
+      const updated = await petApi.getMyPet();
+      setPetInfo(updated);
+    } catch { /* 잔액 부족 등 - 무시 */ }
+    finally { setActionLoading(false); }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a2e' }}>
+        <span style={{ color: '#fff', fontSize: 16 }}>불러오는 중...</span>
+      </div>
+    );
+  }
+
+  if (error || !petInfo) {
+    return (
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, background: '#1a1a2e' }}>
+        <span style={{ fontSize: 48 }}>⚠️</span>
+        <span style={{ color: '#fff', fontSize: 15 }}>펫 정보를 불러올 수 없어요</span>
+        <button
+          onClick={() => { setError(''); setLoading(true); fetchAll(); }}
+          style={{ padding: '10px 24px', borderRadius: 12, border: 'none', background: '#5BC4FF', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
+
+  const hungerPct = (petInfo.hunger / MAX_HUNGER) * 100;
+  const thirstPct = (petInfo.thirst / MAX_THIRST) * 100;
+  const expPct    = Math.min((petInfo.currentXp / REQUIRED_EXP) * 100, 100);
 
   return (
     <div
@@ -58,7 +145,7 @@ export function PetScreen() {
     >
       {/* 배경 이미지 */}
       <img
-        src={bgImage}
+        src={PET_BG_IMAGE[petInfo.activeBackground ?? ''] ?? bgDefault}
         alt="배경"
         style={{
           position: 'absolute',
@@ -143,7 +230,7 @@ export function PetScreen() {
               backdropFilter: 'blur(6px)',
             }}>
               <span style={{ fontSize: 14, fontWeight: 800, color: '#FFE066', letterSpacing: '0.04em' }}>
-                LV.{pet.level}
+                LV.{petInfo.level}
               </span>
             </div>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.88)', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
@@ -151,7 +238,7 @@ export function PetScreen() {
             </span>
           </div>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.88)', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
-            {pet.currentExp} / {pet.requiredExp} EXP
+            {petInfo.currentXp} / {REQUIRED_EXP} EXP
           </span>
         </div>
         <div style={{ background: 'rgba(255,255,255,0.22)', borderRadius: 99, height: 9, overflow: 'hidden', backdropFilter: 'blur(4px)' }}>
@@ -189,8 +276,8 @@ export function PetScreen() {
           borderRadius: '50%', filter: 'blur(8px)',
         }} />
         <motion.img
-          src={getPetImage(pet.level)}
-          alt={`펫 레벨 ${pet.level}`}
+          src={getPetImage(petInfo.stage)}
+          alt={`펫 레벨 ${petInfo.level}`}
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           style={{
@@ -219,32 +306,37 @@ export function PetScreen() {
         >
           {[
             {
-              label: '물주기',
-              icon: <Droplets size={24} color="#fff" />,
-              color: 'linear-gradient(135deg, #5BC4FF 0%, #94B9F3 100%)',
-              shadow: '0 4px 16px rgba(91,196,255,0.45)',
-              count: 5,
+              label:   '물주기',
+              icon:    <Droplets size={24} color="#fff" />,
+              color:   'linear-gradient(135deg, #5BC4FF 0%, #94B9F3 100%)',
+              shadow:  '0 4px 16px rgba(91,196,255,0.45)',
+              count:   petInfo.waterCount,
+              onClick: handleWater,
             },
             {
-              label: '사료주기',
-              icon: <Utensils size={24} color="#fff" />,
-              color: 'linear-gradient(135deg, #FFB347 0%, #FF6B6B 100%)',
-              shadow: '0 4px 16px rgba(255,179,71,0.45)',
-              count: 3,
+              label:   '사료주기',
+              icon:    <Utensils size={24} color="#fff" />,
+              color:   'linear-gradient(135deg, #FFB347 0%, #FF6B6B 100%)',
+              shadow:  '0 4px 16px rgba(255,179,71,0.45)',
+              count:   petInfo.foodCount,
+              onClick: handleFeed,
             },
-          ].map(({ label, icon, color, shadow, count }) => (
+          ].map(({ label, icon, color, shadow, count, onClick }) => (
             <motion.button
               key={label}
-              whileTap={{ scale: 0.96 }}
+              whileTap={{ scale: count > 0 ? 0.96 : 1 }}
+              onClick={onClick}
               style={{
                 flex: 1, position: 'relative',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: 8, background: color,
+                gap: 8, background: count > 0 ? color : 'rgba(150,150,150,0.4)',
                 borderRadius: 16, padding: '16px 0',
-                cursor: 'pointer', border: 'none', boxShadow: shadow,
+                cursor: count > 0 ? 'pointer' : 'not-allowed',
+                border: 'none',
+                boxShadow: count > 0 ? shadow : 'none',
+                opacity: actionLoading ? 0.7 : 1,
               }}
             >
-              {/* 보유 개수 배지 */}
               <div style={{
                 position: 'absolute', top: 8, left: 10,
                 background: 'rgba(0,0,0,0.28)',
@@ -277,8 +369,8 @@ export function PetScreen() {
           }}
         >
           {[
-            { emoji: '🍖', label: '배고픔', value: pet.hunger, max: MAX_HUNGER, pct: hungerPct, color: getHungerColor(hungerPct), delay: 0.45 },
-            { emoji: '💧', label: '목마름', value: pet.thirst, max: MAX_THIRST, pct: thirstPct, color: getThirstColor(thirstPct), delay: 0.55 },
+            { emoji: '🍖', label: '배고픔', value: petInfo.hunger, max: MAX_HUNGER, pct: hungerPct, color: getHungerColor(hungerPct), delay: 0.45 },
+            { emoji: '💧', label: '목마름', value: petInfo.thirst, max: MAX_THIRST, pct: thirstPct, color: getThirstColor(thirstPct), delay: 0.55 },
           ].map(({ emoji, label, value, max, pct, color, delay }) => (
             <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

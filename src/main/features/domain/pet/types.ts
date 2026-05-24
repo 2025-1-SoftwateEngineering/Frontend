@@ -1,3 +1,6 @@
+/** API 응답에서 직접 오는 펫 성장 단계 */
+export type PetStage = 'EGG' | 'BABY' | 'GROWING' | 'ADULT';
+
 /**
  * pet (애완동물)
  * DB Table: pet

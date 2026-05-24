@@ -12,7 +12,7 @@ async function apiFetch<T>(
   path: string,
   options?: RequestInit,
 ): Promise<ApiResponse<T>> {
-  const token = localStorage.getItem('accessToken');
+  const token = localStorage.getItem('vocabuddy_access_token');
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
@@ -46,13 +46,13 @@ export const sendFriendRequest = (friendId: number) =>
 export const acceptFriendRequest = (friendId: number) =>
   apiFetch<null>(`/api/v1/friends/${friendId}`, {
     method: 'PATCH',
-    body: JSON.stringify({ status: 'ACCEPTED' }),
+    body: JSON.stringify({ state: 'accept' }),
   });
 
 export const rejectFriendRequest = (friendId: number) =>
   apiFetch<null>(`/api/v1/friends/${friendId}`, {
     method: 'PATCH',
-    body: JSON.stringify({ status: 'REJECTED' }),
+    body: JSON.stringify({ state: 'reject' }),
   });
 
 // 친구 차단
@@ -74,9 +74,9 @@ export const searchUserByUsername = (email: string) =>
 export const getMyProfile = () =>
   apiFetch<FriendProfile>('/api/v1/members/me');
 
-// 차단 해제 (Swagger에 없으면 백엔드 팀 확인 필요)
+// 차단 해제 (차단과 동일한 PATCH 엔드포인트, toggle 방식)
 export const unblockUser = (friendId: number) =>
-  apiFetch<null>(`/api/v1/friends/${friendId}/block`, { method: 'DELETE' });
+  apiFetch<null>(`/api/v1/friends/${friendId}/block`, { method: 'PATCH' });
 
 // 친구 삭제 (Swagger에 없으면 백엔드 팀 확인 필요)
 export const deleteFriend = (friendId: number) =>

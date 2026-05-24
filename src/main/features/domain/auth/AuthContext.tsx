@@ -30,24 +30,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const restore = async () => {
       const hasToken = Boolean(tokenStorage.getAccessToken());
 
+      let storedMember: Member | null = null;
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) storedMember = JSON.parse(raw);
+      } catch { /* ignore */ }
+
       if (hasToken) {
         try {
-          const member = await authApi.getMyProfile();
+          // /members/me 가 profileUrl을 반환하지 않으므로 localStorage 값을 fallback으로 전달
+          const member = await authApi.getMyProfile(storedMember?.profileUrl);
           setCurrentUser(member);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(member));
         } catch {
-          // 토큰 만료 등 → 캐시에서 복원 시도
-          try {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) setCurrentUser(JSON.parse(stored));
-          } catch { /* ignore */ }
+          if (storedMember) setCurrentUser(storedMember);
         }
       } else {
-        // 토큰 없음 → 캐시에서 복원 시도
-        try {
-          const stored = localStorage.getItem(STORAGE_KEY);
-          if (stored) setCurrentUser(JSON.parse(stored));
-        } catch { /* ignore */ }
+        if (storedMember) setCurrentUser(storedMember);
       }
 
       setIsLoading(false);
@@ -81,8 +80,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ─── 프로필 업데이트 (백엔드 미제공 엔드포인트 → 로컬 처리) ─────────────────
   const updateUser = useCallback(async (data: Partial<Member>) => {
     if (!currentUser) return;
-    // ※ 현재 백엔드에 프로필 수정 API가 없으므로 로컬 상태만 갱신합니다.
-    const updated = await memberApi.updateMember(currentUser.member_id, data);
+    // currentUser 전체를 넘겨 기존 필드(profileUrl 등)가 유실되지 않게 병합
+    const updated = await memberApi.updateMember(currentUser.member_id, { ...currentUser, ...data });
     setCurrentUser(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   }, [currentUser]);

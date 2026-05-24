@@ -91,18 +91,22 @@ export const memberApi = {
    */
   getMyProfile: async (): Promise<Partial<Member>> => {
     const res = await apiFetch<{
-      id?:      number;
-      nickname: string;
-      email:    string;
-      streak:   number;
-      coin:     number;
+      id?:                number;
+      nickname:           string;
+      email:              string;
+      streak:             number;
+      coin:               number;
+      activeProfilePhoto: number | null;
+      activeProfileBg:    number | null;
     }>('/members/me', {}, API_URL);
     return {
-      member_id: res.result?.id ?? 0,
-      nickname:  res.result?.nickname,
-      email:     res.result?.email,
-      streak:    res.result?.streak,
-      coin:      res.result?.coin,
+      member_id:          res.result?.id ?? 0,
+      nickname:           res.result?.nickname,
+      email:              res.result?.email,
+      streak:             res.result?.streak,
+      coin:               res.result?.coin,
+      activeProfilePhoto: res.result?.activeProfilePhoto ?? null,
+      activeProfileBg:    res.result?.activeProfileBg    ?? null,
     };
   },
 
@@ -272,16 +276,18 @@ export const memberApi = {
   updateMember: async (_memberId: number, data: Partial<Member>): Promise<Member> => {
     const now = new Date().toISOString();
     return {
-      member_id:  _memberId,
-      email:      data.email      ?? '',
-      nickname:   data.nickname   ?? '',
-      authorize:  data.authorize  ?? 'ROLE_USER',
-      login_at:   data.login_at   ?? now,
-      streak:     data.streak     ?? 0,
-      coin:       data.coin       ?? 0,
-      created_at: data.created_at ?? now,
-      updated_at: now,
-      deleted_at: data.deleted_at ?? null,
+      member_id:          _memberId,
+      email:              data.email              ?? '',
+      nickname:           data.nickname           ?? '',
+      authorize:          data.authorize          ?? 'ROLE_USER',
+      login_at:           data.login_at           ?? now,
+      streak:             data.streak             ?? 0,
+      coin:               data.coin               ?? 0,
+      created_at:         data.created_at         ?? now,
+      updated_at:         now,
+      deleted_at:         data.deleted_at         ?? null,
+      activeProfilePhoto: data.activeProfilePhoto ?? null,
+      activeProfileBg:    data.activeProfileBg    ?? null,
       ...data,
     };
   },

@@ -10,28 +10,32 @@ interface AuthTokenResult {
 }
 
 interface MyProfileResult {
-  id?:        number;
-  nickname:   string;
-  email:      string;
-  streak:     number;
-  coin:       number;
-  authorize?: string;
+  id?:          number;
+  nickname:     string;
+  email:        string;
+  streak:       number;
+  coin:         number;
+  authorize?:   string;
+  profileUrl?:  string;
 }
 
 // /members/me 결과를 Member 타입으로 변환
-function toMember(profile: MyProfileResult): Member {
+function toMember(profile: MyProfileResult, fallbackProfileUrl?: string): Member {
   const now = new Date().toISOString();
   return {
-    member_id:  profile.id ?? 0,
-    email:      profile.email,
-    nickname:   profile.nickname,
-    authorize:  (profile.authorize as Authorize) ?? 'ROLE_USER',
-    login_at:   now,
-    streak:     profile.streak,
-    coin:       profile.coin,
-    created_at: now,
-    updated_at: now,
-    deleted_at: null,
+    member_id:          profile.id ?? 0,
+    email:              profile.email,
+    nickname:           profile.nickname,
+    authorize:          (profile.authorize as Authorize) ?? 'ROLE_USER',
+    login_at:           now,
+    streak:             profile.streak,
+    coin:               profile.coin,
+    created_at:         now,
+    updated_at:         now,
+    deleted_at:         null,
+    activeProfilePhoto: null,
+    activeProfileBg:    null,
+    profileUrl:         profile.profileUrl ?? fallbackProfileUrl ?? '',
   };
 }
 
@@ -101,9 +105,9 @@ export const authApi = {
    * 현재 로그인된 사용자의 프로필을 가져옵니다.
    * 세션 복원 시 사용합니다.
    */
-  getMyProfile: async (): Promise<Member> => {
+  getMyProfile: async (fallbackProfileUrl?: string): Promise<Member> => {
     const res = await apiFetch<MyProfileResult>('/members/me', {}, API_URL);
-    return toMember(res.result!);
+    return toMember(res.result!, fallbackProfileUrl);
   },
 
   /**

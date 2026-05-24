@@ -4,6 +4,7 @@ import { ChevronLeft, ShieldBan, ShieldOff, UserMinus, UserPlus,
   BookOpen, Flame, Trophy, Loader2, ShieldAlert } from 'lucide-react';
 import type { FriendProfile } from '@/main/features/domain/friend';
 import { sendFriendRequest, deleteFriend, blockUser, unblockUser } from '@/main/features/domain/friend';
+import { memberApi } from '@/main/features/domain/member/memberApi';
 import { FriendAvatar } from '@/app/components/friend/FriendAvatar';
 
 const FriendProfilePage: React.FC = () => {
@@ -14,26 +15,28 @@ const FriendProfilePage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
 
-  //테스트용 데이터
   useEffect(() => {
     const id = Number(memberId);
     if (!id) return;
 
     setLoading(true);
-    setTimeout(() => {
-      setProfile({
-        memberId: id,
-        username: 'friend@test.com',
-        nickname: '친구',
-        level: 5,
-        experience: 72,
-        totalWordsLearned: 240,
-        streakDays: 12,
-        isBlocked: false,
-        status: 'FRIEND',
-      });
-      setLoading(false);
-    }, 300);
+    memberApi.getFriendProfile(id)
+      .then((res) => {
+        setProfile({
+          memberId: res.id,
+          username: '',
+          nickname: res.nickname,
+          profileImageUrl: undefined,
+          level: 1,
+          experience: 0,
+          totalWordsLearned: 0,
+          streakDays: res.streak,
+          isBlocked: false,
+          status: 'FRIEND',
+        });
+      })
+      .catch(() => setProfile(null))
+      .finally(() => setLoading(false));
   }, [memberId]);
 
   const id = Number(memberId);

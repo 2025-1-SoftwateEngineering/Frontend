@@ -28,7 +28,8 @@ export function ProfileScreen() {
     .flatMap((p) => p.testResults.map((t) => t.score))
     .reduce((a, b) => Math.max(a, b), 0);
 
-  const initial = currentUser.nickname.charAt(0).toUpperCase();
+  const initial     = currentUser.nickname.charAt(0).toUpperCase();
+  const profilePhoto = currentUser.profileUrl || null;
 
   const handleLogout = () => {
     logout();
@@ -44,8 +45,11 @@ export function ProfileScreen() {
 
         <div className="relative flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center flex-shrink-0 bg-white border-[3px] border-white/70 shadow-md">
-              <span className="text-[28px] font-bold text-brand-blue-dark">{initial}</span>
+            <div className="w-[72px] h-[72px] rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-white border-[3px] border-white/70 shadow-md">
+              {profilePhoto
+                ? <img src={profilePhoto} alt="프로필" className="w-full h-full object-cover" />
+                : <span className="text-[28px] font-bold text-brand-blue-dark">{initial}</span>
+              }
             </div>
 
             <div>

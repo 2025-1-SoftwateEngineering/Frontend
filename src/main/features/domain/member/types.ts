@@ -1,3 +1,5 @@
+import type { PetStage } from '../pet/types';
+
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 /** authorize: 사용자 권한 (DB enum: ROLE_ADMIN | ROLE_USER) */
@@ -36,6 +38,12 @@ export interface Member {
   updated_at: string;
   /** 탈퇴 시각 (NULL = 미탈퇴, 값 존재 = 탈퇴) */
   deleted_at: string | null;
+  /** 현재 적용 중인 프로필 사진 아이템 ID (null = 기본) */
+  activeProfilePhoto: number | null;
+  /** 현재 적용 중인 프로필 배경 아이템 ID (null = 기본) */
+  activeProfileBg: number | null;
+  /** GCS에 업로드된 프로필 사진 URL (빈 문자열 = 미설정) */
+  profileUrl: string;
 }
 
 /**
@@ -55,6 +63,8 @@ export interface MemberPet {
   member_id: number;
   /** FK → pet.pet_id */
   pet_id: number;
+  /** API 응답에서 직접 오는 성장 단계 */
+  stage: PetStage;
 }
 
 /**

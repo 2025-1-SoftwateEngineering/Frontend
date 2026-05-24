@@ -1,19 +1,23 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Camera } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
+import { imageApi } from '../../main/features/domain/member/imageApi';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { MobileLayout } from '../components/MobileLayout';
 
 export function ProfileEditScreen() {
   const navigate = useNavigate();
   const { currentUser, updateUser, deleteAccount } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [nickname, setNickname] = useState(currentUser?.nickname ?? '');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [nickname,          setNickname]          = useState(currentUser?.nickname ?? '');
+  const [saving,            setSaving]            = useState(false);
+  const [error,             setError]             = useState('');
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [photoUploading,    setPhotoUploading]    = useState(false);
+  const [previewUrl,        setPreviewUrl]        = useState<string | null>(null);
 
   if (!currentUser) return null;
 
@@ -39,6 +43,32 @@ export function ProfileEditScreen() {
     }
   };
 
+  const handlePhotoClick = () => {
+    if (!photoUploading) fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPreviewUrl(URL.createObjectURL(file));
+    setPhotoUploading(true);
+    setError('');
+    try {
+      const { url, fileName } = await imageApi.createSignedUri(file.name);
+      await imageApi.uploadToGcs(url, file);
+      const { publicUrl } = await imageApi.confirmUpload(fileName);
+      await updateUser({ profileUrl: publicUrl });
+    } catch {
+      setError('사진 업로드에 실패했어요. 다시 시도해 주세요.');
+      setPreviewUrl(null);
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const displayPhoto = previewUrl ?? (currentUser.profileUrl || null);
   const initial = currentUser.nickname.charAt(0).toUpperCase();
 
   return (
@@ -53,9 +83,33 @@ export function ProfileEditScreen() {
 
         <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5">
           <div className="rounded-2xl p-5 flex flex-col items-center gap-4 bg-white shadow-sm">
-            <div className="w-24 h-24 rounded-full flex items-center justify-center bg-brand-blue border-[3px] border-brand-blue-dark shadow-md">
-              <span className="text-[40px] font-bold text-white">{initial}</span>
-            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+            <button
+              type="button"
+              onClick={handlePhotoClick}
+              disabled={photoUploading}
+              className="relative w-24 h-24 rounded-full overflow-hidden border-[3px] border-brand-blue-dark shadow-md bg-brand-blue cursor-pointer"
+              style={{ padding: 0 }}
+            >
+              {displayPhoto ? (
+                <img src={displayPhoto} alt="프로필" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[40px] font-bold text-white flex items-center justify-center w-full h-full">{initial}</span>
+              )}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                {photoUploading ? (
+                  <span className="text-white text-[11px] font-semibold">업로드 중</span>
+                ) : (
+                  <Camera size={22} color="#fff" />
+                )}
+              </div>
+            </button>
 
             <div className="w-full">
               <label className="text-[13px] text-text-sub block mb-1.5">닉네임</label>

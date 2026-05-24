@@ -108,7 +108,7 @@ export const vocaApi = {
       page:     String(page),
       pageSize: String(pageSize),
     });
-    const res = await apiFetch<WordListResult>(`/voca/${vocaId}/words?${query}`, {}, API_URL);
+    const res = await apiFetch<WordListResult>(`/vocabularies/${vocaId}/words?${query}`, {}, API_URL);
     return {
       words:         (res.result?.words ?? []).map((w) => toWord(w, vocaId)),
       totalPages:    res.result?.totalPages    ?? 0,
@@ -136,7 +136,7 @@ export const vocaApi = {
    * 전체 단어장 목록을 가져옵니다. (인증 불필요)
    */
   getBooks: async (): Promise<VocaBook[]> => {
-    const res = await apiFetch<VocaListResult>('/voca', {}, API_URL);
+    const res = await apiFetch<VocaListResult>('/vocabularies', {}, API_URL);
     return (res.result?.vocas ?? []).map((v) => ({
       voca_id:     v.vocaId,
       level:       0,
@@ -153,7 +153,7 @@ export const vocaApi = {
    * 내가 학습한 단어장 목록을 가져옵니다. (JWT 필요)
    */
   getMyBooks: async (): Promise<MyVocaDto[]> => {
-    const res = await apiFetch<MyVocaListResult>('/voca/my', {}, API_URL);
+    const res = await apiFetch<MyVocaListResult>('/vocabularies/my', {}, API_URL);
     return res.result?.vocas ?? [];
   },
 
@@ -162,7 +162,7 @@ export const vocaApi = {
    * 테스트 문제(단어 ID + 뜻, 랜덤)를 가져옵니다.
    */
   getTestQuestions: async (vocaId: number): Promise<TestQuestionDto[]> => {
-    const res = await apiFetch<TestQuestionDto[]>(`/voca/${vocaId}/test`, {}, API_URL);
+    const res = await apiFetch<TestQuestionDto[]>(`/vocabularies/${vocaId}/test`, {}, API_URL);
     return res.result ?? [];
   },
 
@@ -175,7 +175,7 @@ export const vocaApi = {
     wordId:  number,
     answer:  string,
   ): Promise<SingleAnswerResult> => {
-    const res = await apiFetch<SingleAnswerResult>(`/voca/${vocaId}/test/submit`, {
+    const res = await apiFetch<SingleAnswerResult>(`/vocabularies/${vocaId}/test/submit`, {
       method: 'POST',
       body:   JSON.stringify({ wordId, answer }),
     }, API_URL);
@@ -190,7 +190,7 @@ export const vocaApi = {
     vocaId:  number,
     answers: TestSubmitAnswer[],
   ): Promise<TestCompleteResult> => {
-    const res = await apiFetch<TestCompleteResult>(`/voca/${vocaId}/test/complete`, {
+    const res = await apiFetch<TestCompleteResult>(`/vocabularies/${vocaId}/test/complete`, {
       method: 'POST',
       body:   JSON.stringify({ answers }),
     }, API_URL);
@@ -202,7 +202,7 @@ export const vocaApi = {
    * 해당 단어장에서 암기한 단어 ID 목록을 가져옵니다.
    */
   getMemorized: async (vocaId: number): Promise<MemorizedResult> => {
-    const res = await apiFetch<MemorizedResult>(`/voca/${vocaId}/memorize`, {}, API_URL);
+    const res = await apiFetch<MemorizedResult>(`/vocabularies/${vocaId}/memorize`, {}, API_URL);
     return res.result!;
   },
 
@@ -214,7 +214,7 @@ export const vocaApi = {
     vocaId:  number,
     wordIds: number[],
   ): Promise<MemorizedResult> => {
-    const res = await apiFetch<MemorizedResult>(`/voca/${vocaId}/memorize`, {
+    const res = await apiFetch<MemorizedResult>(`/vocabularies/${vocaId}/memorize`, {
       method: 'POST',
       body:   JSON.stringify({ wordIds }),
     }, API_URL);
