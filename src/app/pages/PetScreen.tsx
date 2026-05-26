@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Droplets, Utensils, ChevronLeft, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import bgDefault from '../assets/BG_BG01_type1_1.png';
+import bgDefault from '../assets/bg_default.png';
+import bgBG1 from '../assets/BG_BG01_type1_1.png';
 import bgLeaf from '../assets/BG_BG07_Leaf_1.png';
 import petEgg from '../assets/pet_PE_Egg_1.png';
 import petBaby from '../assets/pet_PB_Baby_1.png';
@@ -14,7 +15,7 @@ import type { PetInfo } from '../../main/features/domain/pet/petApi';
 import { storeApi } from '../../main/features/domain/store/storeApi';
 
 const PET_BG_IMAGE: Partial<Record<string, string>> = {
-  PET_BG_1: bgDefault,
+  PET_BG_1: bgBG1,
   PET_BG_2: bgLeaf,
 };
 

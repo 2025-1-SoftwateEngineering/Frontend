@@ -8,11 +8,12 @@ import { tokenStorage } from '../../../config/apiConfig';
 interface AuthContextValue {
   currentUser: Member | null;
   isLoading:   boolean;
-  login:        (req: LoginRequest) => Promise<void>;
-  logout:       () => void;
-  register:     (req: RegisterRequest) => Promise<void>;
-  updateUser:   (data: Partial<Member>) => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  login:           (req: LoginRequest) => Promise<void>;
+  logout:          () => void;
+  register:        (req: RegisterRequest) => Promise<void>;
+  updateUser:      (data: Partial<Member>) => Promise<void>;
+  updateProfile:   (params: { nickname?: string; email?: string }, confirmPassword: string) => Promise<void>;
+  deleteAccount:   () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -76,13 +77,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(member));
   }, []);
 
-  // ─── 프로필 업데이트 (백엔드 미제공 엔드포인트 → 로컬 처리) ─────────────────
+  // ─── 로컬 상태만 업데이트 (profileUrl, coin 등 백엔드가 별도 처리한 필드용) ──
   const updateUser = useCallback(async (data: Partial<Member>) => {
     if (!currentUser) return;
-    // currentUser 전체를 넘겨 기존 필드(profileUrl 등)가 유실되지 않게 병합
     const updated = await memberApi.updateMember(currentUser.member_id, { ...currentUser, ...data });
     setCurrentUser(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  }, [currentUser]);
+
+  // ─── 프로필 수정 (PATCH /v1/members/me, confirmPassword 필수) ───────────────
+  const updateProfile = useCallback(async (
+    params:          { nickname?: string; email?: string },
+    confirmPassword: string,
+  ) => {
+    if (!currentUser) return;
+    const result = await memberApi.updateProfile({ ...params, confirmPassword });
+    const merged: Member = { ...currentUser, ...result };
+    setCurrentUser(merged);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
   }, [currentUser]);
 
   // ─── 회원 탈퇴 (백엔드 미제공 엔드포인트 → 로컬 처리) ─────────────────────
@@ -95,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [currentUser]);
 
   return (
-    <AuthContext.Provider value={{ currentUser, isLoading, login, logout, register, updateUser, deleteAccount }}>
+    <AuthContext.Provider value={{ currentUser, isLoading, login, logout, register, updateUser, updateProfile, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

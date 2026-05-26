@@ -3,6 +3,7 @@
 // ─────────────────────────────────────────────
 
 import React from 'react';
+import defaultProfileImg from '../../assets/default_profile.svg';
 
 interface FriendAvatarProps {
   nickname: string;
@@ -31,7 +32,6 @@ export const FriendAvatar: React.FC<FriendAvatarProps> = ({
   level,
 }) => {
   const sz = sizeMap[size];
-  const initial = (nickname?.[0] ?? '?').toUpperCase();
   const levelColor = level !== undefined ? levelColors[Math.floor((level - 1) / 10) % levelColors.length] : levelColors[0];
 
   return (
@@ -39,11 +39,11 @@ export const FriendAvatar: React.FC<FriendAvatarProps> = ({
       <div
         className={`${sz.outer} rounded-full overflow-hidden flex items-center justify-center bg-[#EDE9BF] border-2 border-[#B8D0FA]`}
       >
-        {profileImageUrl ? (
-          <img src={profileImageUrl} alt={nickname} className="w-full h-full object-cover" />
-        ) : (
-          <span className={`font-bold text-[#776A77] ${sz.text}`}>{initial}</span>
-        )}
+        <img
+          src={profileImageUrl ?? defaultProfileImg}
+          alt={nickname}
+          className="w-full h-full object-cover"
+        />
       </div>
       {level !== undefined && (
         <span

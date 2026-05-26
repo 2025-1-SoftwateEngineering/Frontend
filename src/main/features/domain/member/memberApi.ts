@@ -272,6 +272,22 @@ export const memberApi = {
     return res.result!;
   },
 
+  /**
+   * PATCH /api/v1/members/me
+   * 닉네임·이메일을 수정합니다. confirmPassword 필수.
+   */
+  updateProfile: async (params: {
+    nickname?:       string;
+    email?:          string;
+    confirmPassword: string;
+  }): Promise<{ email: string; nickname: string }> => {
+    const res = await apiFetch<{ email: string; nickname: string }>('/members/me', {
+      method: 'PATCH',
+      body:   JSON.stringify(params),
+    }, API_URL);
+    return res.result!;
+  },
+
   // ─── 백엔드 미제공 엔드포인트 (로컬 처리 유지) ───────────────────────────────
 
   updateMember: async (_memberId: number, data: Partial<Member>): Promise<Member> => {

@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { ChevronLeft, Check } from 'lucide-react';
-import bgDefault from '../assets/BG_BG01_type1_1.png';
+import bgDefault from '../assets/bg_default.png';
+import bgBG1 from '../assets/BG_BG01_type1_1.png';
 import bgLeaf from '../assets/BG_BG07_Leaf_1.png';
 import petEgg from '../assets/pet_PE_Egg_1.png';
 import petBaby from '../assets/pet_PB_Baby_1.png';
@@ -16,7 +17,7 @@ import type { ItemType } from '../../main/item/types';
 // ─── 상수 ───────────────────────────────────────────────────────────────────────
 
 const PET_BG_IMAGE: Partial<Record<ItemType, string>> = {
-  PET_BG_1: bgDefault,
+  PET_BG_1: bgBG1,
   PET_BG_2: bgLeaf,
 };
 
@@ -236,15 +237,11 @@ export function PetProfileEditScreen() {
 
           {/* 미리보기 */}
           <div className="relative flex-shrink-0 overflow-hidden" style={{ height: 220 }}>
-            {previewImage ? (
-              <img
-                src={previewImage}
-                alt="배경 미리보기"
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-              />
-            ) : (
-              <div style={{ position: 'absolute', inset: 0, background: '#B8D0FA' }} />
-            )}
+            <img
+              src={previewImage ?? bgDefault}
+              alt="배경 미리보기"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+            />
 
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,

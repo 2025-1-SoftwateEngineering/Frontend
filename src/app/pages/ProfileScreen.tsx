@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Settings, Shield, Star, BookOpen, Target } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
+import defaultProfileImg from '../assets/default_profile.svg';
 
 const LEVEL_TITLES: Record<number, string> = {
   1: '씨앗', 2: '새싹', 3: '초보자', 4: '학습자', 5: '탐구자',
@@ -25,7 +26,6 @@ export function ProfileScreen() {
     .flatMap((p) => p.testResults.map((t) => t.score))
     .reduce((a, b) => Math.max(a, b), 0);
 
-  const initial     = currentUser.nickname.charAt(0).toUpperCase();
   const profilePhoto = currentUser.profileUrl || null;
 
   const handleLogout = () => {
@@ -43,10 +43,11 @@ export function ProfileScreen() {
         <div className="relative flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="w-[72px] h-[72px] rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-white border-[3px] border-white/70 shadow-md">
-              {profilePhoto
-                ? <img src={profilePhoto} alt="프로필" className="w-full h-full object-cover" />
-                : <span className="text-[28px] font-bold text-brand-blue-dark">{initial}</span>
-              }
+              <img
+                src={profilePhoto ?? defaultProfileImg}
+                alt="프로필"
+                className="w-full h-full object-cover"
+              />
             </div>
 
             <div>

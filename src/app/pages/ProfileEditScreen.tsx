@@ -3,16 +3,18 @@ import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { ChevronLeft, Camera } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
+import defaultProfileImg from '../assets/default_profile.svg';
 import { imageApi } from '../../main/features/domain/member/imageApi';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { MobileLayout } from '../components/MobileLayout';
 
 export function ProfileEditScreen() {
   const navigate = useNavigate();
-  const { currentUser, updateUser, deleteAccount } = useAuth();
+  const { currentUser, updateUser, updateProfile, deleteAccount } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [nickname,          setNickname]          = useState(currentUser?.nickname ?? '');
+  const [confirmPassword,   setConfirmPassword]   = useState('');
   const [saving,            setSaving]            = useState(false);
   const [error,             setError]             = useState('');
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -23,10 +25,11 @@ export function ProfileEditScreen() {
 
   const handleSave = async () => {
     setError('');
-    if (!nickname.trim()) { setError('닉네임을 입력해 주세요.'); return; }
+    if (!nickname.trim())      { setError('닉네임을 입력해 주세요.'); return; }
+    if (!confirmPassword.trim()) { setError('현재 비밀번호를 입력해 주세요.'); return; }
     setSaving(true);
     try {
-      await updateUser({ nickname: nickname.trim() });
+      await updateProfile({ nickname: nickname.trim() }, confirmPassword);
       navigate('/profile');
     } catch (e: any) {
       setError(e.message || '저장에 실패했습니다.');
@@ -69,7 +72,6 @@ export function ProfileEditScreen() {
   };
 
   const displayPhoto = previewUrl ?? (currentUser.profileUrl || null);
-  const initial = currentUser.nickname.charAt(0).toUpperCase();
 
   return (
     <MobileLayout>
@@ -97,11 +99,7 @@ export function ProfileEditScreen() {
               className="relative w-24 h-24 rounded-full overflow-hidden border-[3px] border-brand-blue-dark shadow-md bg-brand-blue cursor-pointer"
               style={{ padding: 0 }}
             >
-              {displayPhoto ? (
-                <img src={displayPhoto} alt="프로필" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-[40px] font-bold text-white flex items-center justify-center w-full h-full">{initial}</span>
-              )}
+              <img src={displayPhoto ?? defaultProfileImg} alt="프로필" className="w-full h-full object-cover" />
               <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                 {photoUploading ? (
                   <span className="text-white text-[11px] font-semibold">업로드 중</span>
@@ -129,6 +127,17 @@ export function ProfileEditScreen() {
                 placeholder="이메일"
                 title="이메일"
                 className="w-full px-4 py-3.5 rounded-[14px] border border-[#e5e7eb] text-[15px] outline-none bg-surface-lighter text-text-sub"
+              />
+            </div>
+
+            <div className="w-full">
+              <label className="text-[13px] text-text-sub block mb-1.5">현재 비밀번호 (저장 시 필요)</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="비밀번호 입력"
+                className="w-full px-4 py-3.5 rounded-[14px] border border-[#e5e7eb] text-[15px] outline-none bg-surface-input text-text-main"
               />
             </div>
           </div>
