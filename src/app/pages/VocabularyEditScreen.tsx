@@ -41,6 +41,7 @@ export function VocabularyEditScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletedWordIds, setDeletedWordIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -72,10 +73,12 @@ export function VocabularyEditScreen() {
   const addRow = () => setRows((prev) => [...prev, makeRow()]);
 
   const removeRow = (rowId: string) => {
-    setRows((prev) => {
-      if (prev.length <= 1) return prev;
-      return prev.filter((r) => r.rowId !== rowId);
-    });
+    if (rows.length <= 1) return;
+    const row = rows.find((r) => r.rowId === rowId);
+    if (row?.word_id !== undefined) {
+      setDeletedWordIds((ids) => [...ids, row.word_id!]);
+    }
+    setRows((prev) => prev.filter((r) => r.rowId !== rowId));
   };
 
   const handleSave = async () => {
@@ -100,19 +103,32 @@ export function VocabularyEditScreen() {
 
     setSaving(true);
     try {
-      const newVocaId = isEdit ? Number(bookId) : Date.now();
-      const words: Word[] = rows.map((r, i) => ({
-        word_id: r.word_id ?? Date.now() + i,
-        voca_id: newVocaId,
-        english_word: r.english_word.trim(),
-        meaning: r.meaning.trim(),
-      }));
-
       const description = `${name.trim()}|||${category.trim()}|||${bookDesc.trim()}`;
 
       if (isEdit) {
-        await vocaApi.updateBook(Number(bookId), { level: 1, solved_coin: 0, words, description });
+        const vocaIdNum = Number(bookId);
+        const existingRows = rows.filter((r) => r.word_id !== undefined);
+        const newRows = rows.filter((r) => r.word_id === undefined);
+
+        await vocaApi.updateBook(vocaIdNum, { description });
+        await Promise.all([
+          ...existingRows.map((r) =>
+            vocaApi.updateWord(r.word_id!, { english: r.english_word.trim(), meaning: r.meaning.trim() }),
+          ),
+          vocaApi.addWords(newRows.map((r) => ({
+            english: r.english_word.trim(),
+            meaning: r.meaning.trim(),
+            vocabularyId: vocaIdNum,
+          }))),
+          ...deletedWordIds.map((id) => vocaApi.deleteWord(id)),
+        ]);
       } else {
+        const words: Word[] = rows.map((r, i) => ({
+          word_id: Date.now() + i,
+          voca_id: 0,
+          english_word: r.english_word.trim(),
+          meaning: r.meaning.trim(),
+        }));
         await vocaApi.createBook({ level: 1, solved_coin: 0, words, description });
       }
       navigate('/vocabulary');

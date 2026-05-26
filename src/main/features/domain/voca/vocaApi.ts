@@ -243,15 +243,34 @@ export const vocaApi = {
     return { ...data, voca_id: vocaId, created_at: bookRes.result![0].addedAt };
   },
 
-  updateBook: async (
-    _vocaId: number,
-    _data:   Partial<Omit<VocaBook, 'voca_id' | 'created_at'>>,
-  ): Promise<VocaBook> => {
-    throw new Error('[vocaApi] updateBook: /admin/v1/voca-books/{vocaId} 엔드포인트를 사용하세요.');
+  updateBook: async (vocaId: number, data: { description?: string; solvedCoin?: number }): Promise<void> => {
+    await apiFetch(`/voca-books/${vocaId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }, ADMIN_URL);
   },
 
-  deleteBook: async (_vocaId: number): Promise<void> => {
-    throw new Error('[vocaApi] deleteBook: /admin/v1/voca-books/{vocaId} 엔드포인트를 사용하세요.');
+  deleteBook: async (vocaId: number): Promise<void> => {
+    await apiFetch(`/voca-books/${vocaId}`, { method: 'DELETE' }, ADMIN_URL);
+  },
+
+  updateWord: async (wordId: number, data: { english?: string; meaning?: string }): Promise<void> => {
+    await apiFetch(`/words/${wordId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }, ADMIN_URL);
+  },
+
+  deleteWord: async (wordId: number): Promise<void> => {
+    await apiFetch(`/words/${wordId}`, { method: 'DELETE' }, ADMIN_URL);
+  },
+
+  addWords: async (words: { english: string; meaning: string; vocabularyId: number }[]): Promise<void> => {
+    if (words.length === 0) return;
+    await apiFetch('/words', {
+      method: 'POST',
+      body: JSON.stringify(words),
+    }, ADMIN_URL);
   },
 };
 
