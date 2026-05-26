@@ -22,6 +22,7 @@ import { PetScreen } from './pages/PetScreen.tsx';
 import { PetProfileEditScreen } from './pages/PetProfileEditScreen.tsx';
 import { MiniGameSelectScreen } from './pages/MiniGameSelectScreen';
 import { ChoiceListScreen } from './pages/ChoiceListScreen';
+import { ChoiceCreateScreen } from './pages/ChoiceCreateScreen';
 import { QuizScreen } from './pages/QuizScreen';
 import { CrosswordListScreen } from './pages/CrosswordListScreen';
 import { CrosswordScreen } from './pages/CrosswordScreen';
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
       { path: '/pet/edit', Component: PetProfileEditScreen },
       { path: '/minigames', Component: MiniGameSelectScreen },
       { path: '/choices', Component: ChoiceListScreen },
+      { path: '/choices/create', Component: ChoiceCreateScreen },
       { path: '/choices/:choiceId', Component: QuizScreen },
       { path: '/crosswords', Component: CrosswordListScreen },
       { path: '/crosswords/:crosswordId', Component: CrosswordScreen },

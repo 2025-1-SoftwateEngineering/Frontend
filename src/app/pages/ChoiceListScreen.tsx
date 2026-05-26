@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { MobileLayout } from '../components/MobileLayout';
+import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { quizApi } from '../../main/features/domain/voca/vocaApi';
 import type { ChoiceListItem } from '../../main/features/domain/voca/vocaApi';
 
 export function ChoiceListScreen() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const isAdmin = currentUser?.authorize === 'ROLE_ADMIN';
   const [items, setItems] = useState<ChoiceListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -31,10 +34,20 @@ export function ChoiceListScreen() {
             >
               <ChevronLeft size={26} />
             </button>
-            <div>
+            <div className="flex-1">
               <h1 className="text-[20px] font-bold text-text-main">사지선다</h1>
               <p className="text-[12px] text-text-sub">퀴즈를 선택해 도전해 보세요</p>
             </div>
+            {isAdmin && (
+              <button
+                onClick={() => navigate('/choices/create')}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl active:scale-95 transition-transform text-[13px] font-semibold"
+                style={{ background: '#B8D0FA', color: '#1c1c1c', border: 'none', cursor: 'pointer' }}
+              >
+                <Plus size={15} />
+                생성
+              </button>
+            )}
           </div>
         </div>
 

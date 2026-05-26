@@ -348,6 +348,16 @@ export const quizApi = {
     return res.result!;
   },
 
+  createChoiceQuiz: async (
+    solvedCoin: number,
+    choices: { word: string; isWord: boolean }[],
+  ): Promise<void> => {
+    await apiFetch('/choices', {
+      method: 'POST',
+      body: JSON.stringify({ solvedCoin, choices }),
+    }, ADMIN_URL);
+  },
+
   // ── 십자말풀이 ────────────────────────────────────────────────────────────
   getCrosswordList: async (): Promise<CrosswordListItem[]> => {
     const res = await apiFetch<CursorResult<CrosswordListItem>>('/crosswords?pageSize=50', {}, API_URL);
