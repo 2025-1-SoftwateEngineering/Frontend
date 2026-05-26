@@ -6,7 +6,7 @@
 import React, { useState, useRef } from 'react';
 import { Search, X, UserPlus, ShieldAlert, UserCheck, Loader2 } from 'lucide-react';
 import type { UserSearchResult } from '@/main/features/domain/friend';
-import { searchUserByUsername, sendFriendRequest } from '@/main/features/domain/friend';
+import { memberApi } from '@/main/features/domain/member/memberApi';
 import { FriendAvatar } from './FriendAvatar';
 
 interface AddFriendModalProps {
@@ -23,33 +23,6 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({ onClose }) => {
   const [sent, setSent] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  //테스트용
-  const handleSearch = async () => {
-  const trimmed = query.trim();
-  if (!trimmed) return;
-  setSearchState('loading');
-  setResult(null);
-  setSent(false);
-
-  setTimeout(() => {
-    const MOCK_USERS = [
-      { id: 10, memberId: 10, nickname: '테스트유저1', email: 'test1@test.com', username: 'test1', level: 3, status: 'NONE' as const, isBlocked: false },
-      { id: 11, memberId: 11, nickname: '테스트유저2', email: 'test2@test.com', username: 'test2', level: 7, status: 'FRIEND' as const, isBlocked: false },
-      { id: 12, memberId: 12, nickname: '차단유저', email: 'blocked@test.com', username: 'blocked', level: 2, status: 'NONE' as const, isBlocked: true },
-    ];
-
-    const found = MOCK_USERS.find((u) => u.email === trimmed);
-    if (!found) {
-      setSearchState('not_found');
-    } else if (found.isBlocked) {
-      setSearchState('blocked');
-    } else {
-      setResult(found);
-      setSearchState('found');
-    }
-  }, 500);
-};
-  /*
   const handleSearch = async () => {
     const trimmed = query.trim();
     if (!trimmed) return;
@@ -59,30 +32,28 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({ onClose }) => {
     setSent(false);
 
     try {
-      const res = await searchUserByUsername(trimmed);
-      if (res.isSuccess && res.result) {
-        if (res.result.isBlocked) {
-          setSearchState('blocked');
-        } else {
-          setResult(res.result);
-          setSearchState('found');
-        }
-      } else {
-        setSearchState('not_found');
-      }
+      const found = await memberApi.searchMember(trimmed);
+      setResult({
+        memberId:        found.id,
+        username:        found.email,
+        nickname:        found.nickname,
+        profileImageUrl: undefined,
+        level:           0,
+        status:          'NONE',
+        isBlocked:       false,
+      } satisfies UserSearchResult);
+      setSearchState('found');
     } catch {
       setSearchState('not_found');
     }
   };
-*/
   const handleSendRequest = async () => {
     if (!result) return;
     setSending(true);
     try {
-      await sendFriendRequest(result.memberId);
+      await memberApi.sendFriendRequest(result.memberId);
       setSent(true);
     } catch {
-      // 이미 요청 중인 경우 등
       setSent(true);
     } finally {
       setSending(false);

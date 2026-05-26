@@ -30,6 +30,8 @@ export interface Member {
   login_at: string;
   /** 연속 학습 일수 */
   streak: number;
+  /** 누적 학습 일수 */
+  totalStudyDays?: number;
   /** 보유 코인 */
   coin: number;
   /** 생성 시각 */

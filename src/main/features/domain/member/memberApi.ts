@@ -15,13 +15,30 @@ interface FriendRequestResult {
 }
 
 interface FriendProfileResult {
-  id:                 number;
-  nickname:           string;
-  totalWordsLearned?: number;
-  streak:             number;
-  coin:               number;
-  loginAt:            string;
+  id:                  number;
+  nickname:            string;
+  totalWordsLearned?:  number;
+  streak:              number;
+  totalStudyDays?:     number;
+  coin:                number;
+  loginAt:             string;
 }
+
+interface FriendRequestListItem {
+  id:           number;
+  fromMemberId: number;
+  nickname:     string;
+  state:        FriendState;
+}
+
+interface FriendRequestListResult {
+  data:       FriendRequestListItem[];
+  nextCursor: string;
+  hasNext:    boolean;
+  pageSize:   number;
+}
+
+export type { FriendRequestListItem, FriendRequestListResult };
 
 interface FriendStateResult {
   id:       number;
@@ -207,14 +224,23 @@ export const memberApi = {
   /**
    * GET /api/v1/friends/request
    * 받은 친구 요청 목록을 커서 기반 페이지네이션으로 조회합니다.
+   * 항목 구조: { id, fromMemberId, nickname, state }
    */
   getFriendRequests: async (
     cursor:   string = '-1',
     pageSize: number = 10,
-  ): Promise<FriendListResult> => {
+  ): Promise<FriendRequestListResult> => {
     const query = new URLSearchParams({ cursor, pageSize: String(pageSize) });
-    const res   = await apiFetch<FriendListResult>(`/friends/request?${query}`, {}, API_URL);
+    const res   = await apiFetch<FriendRequestListResult>(`/friends/request?${query}`, {}, API_URL);
     return res.result!;
+  },
+
+  /**
+   * DELETE /api/v1/friends/{friendId}
+   * 친구를 삭제합니다.
+   */
+  deleteFriend: async (friendId: number): Promise<void> => {
+    await apiFetch<unknown>(`/friends/${friendId}`, { method: 'DELETE' }, API_URL);
   },
 
   /**
