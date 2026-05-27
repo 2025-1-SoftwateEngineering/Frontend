@@ -30,7 +30,7 @@ export function MiniGameSelectScreen() {
         <div className="flex-shrink-0 px-4 pt-4 pb-4 bg-white border-b border-surface-lighter">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/vocabulary')}
               className="text-text-sub bg-transparent border-none cursor-pointer"
             >
               <ChevronLeft size={26} />

@@ -1,17 +1,20 @@
 import { apiFetch, API_URL } from '../../../config/apiConfig';
 import type { PetStage } from './types';
-import type { ItemType } from '../../../item/types';
 
 export interface PetInfo {
-  petId:            number;
-  level:            number;
-  stage:            PetStage;
-  currentXp:        number;
-  hunger:           number;
-  thirst:           number;
-  activeBackground: ItemType | null;
-  foodCount:        number;
-  waterCount:       number;
+  petId:                  number;
+  level:                  number;
+  stage:                  PetStage;
+  currentXp:              number;
+  hunger:                 number;
+  thirst:                 number;
+  activeBackgroundItemId: number | null;
+  activeAccessoryItemId:  number | null;
+  petImageUrl:            string;
+  activeBackgroundUrl:    string | null;
+  activeAccessoryUrl:     string | null;
+  foodCount:              number;
+  waterCount:             number;
 }
 
 export const petApi = {

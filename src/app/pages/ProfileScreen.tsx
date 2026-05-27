@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { Settings, Shield, Star, BookOpen, Target } from 'lucide-react';
+import { Shield, Star, BookOpen, Target } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { useProgress } from '../../main/features/domain/voca/ProgressContext';
 import defaultProfileImg from '../assets/default_profile.svg';
@@ -67,14 +67,6 @@ export function ProfileScreen() {
             </div>
           </div>
 
-          <button
-            type="button"
-            aria-label="프로필 편집"
-            onClick={() => navigate('/profile/edit')}
-            className="w-9 h-9 flex items-center justify-center rounded-xl active:scale-95 transition-transform bg-white/25 border-0"
-          >
-            <Settings size={18} color="#fff" />
-          </button>
         </div>
 
         {/* streak & coin */}

@@ -25,6 +25,7 @@ import { ChoiceListScreen } from './pages/ChoiceListScreen';
 import { ChoiceCreateScreen } from './pages/ChoiceCreateScreen';
 import { QuizScreen } from './pages/QuizScreen';
 import { CrosswordListScreen } from './pages/CrosswordListScreen';
+import { CrosswordCreateScreen } from './pages/CrosswordCreateScreen';
 import { CrosswordScreen } from './pages/CrosswordScreen';
 
 export const router = createBrowserRouter([
@@ -65,6 +66,7 @@ export const router = createBrowserRouter([
       { path: '/choices/create', Component: ChoiceCreateScreen },
       { path: '/choices/:choiceId', Component: QuizScreen },
       { path: '/crosswords', Component: CrosswordListScreen },
+      { path: '/crosswords/create', Component: CrosswordCreateScreen },
       { path: '/crosswords/:crosswordId', Component: CrosswordScreen },
     ],
   },

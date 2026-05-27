@@ -377,6 +377,16 @@ export const quizApi = {
     }, ADMIN_URL);
   },
 
+  createCrossword: async (
+    solvedCoin: number,
+    crosswords: { clueType: 'ACROSS' | 'DOWN'; clueDescription: string; wordStartPoint: string; word: string }[],
+  ): Promise<void> => {
+    await apiFetch('/crosswords', {
+      method: 'POST',
+      body: JSON.stringify({ solvedCoin, crosswords }),
+    }, ADMIN_URL);
+  },
+
   // ── 십자말풀이 ────────────────────────────────────────────────────────────
   getCrosswordList: async (): Promise<CrosswordListItem[]> => {
     const res = await apiFetch<CursorResult<CrosswordListItem>>('/crosswords?pageSize=50', {}, API_URL);

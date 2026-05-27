@@ -8,31 +8,37 @@ import type { ItemType } from '../../main/item/types';
 
 // ─── 카테고리 메타 ─────────────────────────────────────────────────────────────
 
-type Category = 'streak' | 'profile' | 'pet_grow' | 'pet_style' | 'minigame';
+type Category =
+  | 'streak'
+  | 'pet_grow'
+  | 'pet_bg'
+  | 'pet_accessory'
+  | 'profile_frame'
+  | 'profile_bg'
+  | 'minigame';
 
 const ITEM_META: Record<ItemType, { emoji: string; category: Category; description: string }> = {
-  STREAK_FREEZE:         { emoji: '⚡', category: 'streak',    description: '하루 건너뛰어도 연속 기록 유지' },
-  PET_FOOD:              { emoji: '🍖', category: 'pet_grow',  description: '애완동물 배고픔을 줄여줘요' },
-  PET_WATER:             { emoji: '💧', category: 'pet_grow',  description: '애완동물 목마름을 줄여줘요' },
-  CHOICE_TIME_10:        { emoji: '⏱️', category: 'minigame',  description: '사지선다 시간 +10초' },
-  CHOICE_TIME_30:        { emoji: '⏱️', category: 'minigame',  description: '사지선다 시간 +30초' },
-  CROSSWORD_HINT_START:  { emoji: '🔍', category: 'minigame',  description: '십자말풀이 시작 스펠링 힌트' },
-  CROSSWORD_HINT_MIDDLE: { emoji: '🔍', category: 'minigame',  description: '십자말풀이 중간 스펠링 힌트' },
-  PET_BG_1:              { emoji: '🌿', category: 'pet_style', description: '애완동물 프로필 배경' },
-  PET_BG_2:              { emoji: '🌺', category: 'pet_style', description: '애완동물 프로필 배경' },
-  BACKGROUND:            { emoji: '🎨', category: 'profile',   description: '프로필 배경' },
-  PROFILE_PHOTO_1:       { emoji: '🖼️', category: 'profile',   description: '프로필 사진' },
-  PROFILE_PHOTO_2:       { emoji: '🌸', category: 'profile',   description: '프로필 사진' },
-  PROFILE_BG_1:          { emoji: '🌌', category: 'profile',   description: '프로필 배경' },
-  PROFILE_BG_2:          { emoji: '📚', category: 'profile',   description: '프로필 배경' },
+  STREAK_FREEZE:         { emoji: '⚡', category: 'streak',        description: '하루 건너뛰어도 연속 기록 유지' },
+  PET_FOOD:              { emoji: '🍖', category: 'pet_grow',      description: '애완동물 배고픔을 줄여줘요' },
+  PET_WATER:             { emoji: '💧', category: 'pet_grow',      description: '애완동물 목마름을 줄여줘요' },
+  CHOICE_TIME_10:        { emoji: '⏱️', category: 'minigame',      description: '사지선다 시간 +10초' },
+  CHOICE_TIME_30:        { emoji: '⏱️', category: 'minigame',      description: '사지선다 시간 +30초' },
+  CROSSWORD_HINT_START:  { emoji: '🔍', category: 'minigame',      description: '십자말풀이 시작 스펠링 힌트' },
+  CROSSWORD_HINT_MIDDLE: { emoji: '🔍', category: 'minigame',      description: '십자말풀이 중간 스펠링 힌트' },
+  PET_BG:                { emoji: '🌿', category: 'pet_bg',        description: '펫 화면 배경 이미지' },
+  PET_ACCESSORY:         { emoji: '🎀', category: 'pet_accessory', description: '애완동물 치장 아이템' },
+  PROFILE_PHOTO:         { emoji: '🖼️', category: 'profile_frame', description: '프로필 테두리 프레임' },
+  PROFILE_BG:            { emoji: '🌌', category: 'profile_bg',    description: '프로필 배경 이미지' },
 };
 
 const SECTIONS: { category: Category; emoji: string; label: string }[] = [
-  { category: 'streak',    emoji: '🔥', label: '연속학습 파괴' },
-  { category: 'profile',   emoji: '👤', label: '프로필' },
-  { category: 'pet_grow',  emoji: '🐣', label: '애완동물 성장' },
-  { category: 'pet_style', emoji: '🎀', label: '애완동물 프로필' },
-  { category: 'minigame',  emoji: '🎮', label: '미니게임' },
+  { category: 'streak',        emoji: '🔥', label: '연속학습파괴' },
+  { category: 'pet_grow',      emoji: '🐣', label: '애완동물성장' },
+  { category: 'pet_bg',        emoji: '🌿', label: '펫배경' },
+  { category: 'pet_accessory', emoji: '🎀', label: '펫치장' },
+  { category: 'profile_frame', emoji: '🖼️', label: '프로필테두리' },
+  { category: 'profile_bg',    emoji: '🌌', label: '프로필배경' },
+  { category: 'minigame',      emoji: '🎮', label: '미니게임' },
 ];
 
 // ─── 표시용 아이템 타입 ────────────────────────────────────────────────────────
@@ -161,15 +167,17 @@ export function ShopScreen() {
       ]);
 
       const countMap = new Map<number, number>();
-      for (const mi of myList.items) {
+      for (const mi of (myList.items ?? [])) {
         countMap.set(mi.item.itemId, mi.count);
       }
 
       setItems(
-        itemList.items.map(item => ({
-          ...item,
-          ownedCount: countMap.get(item.itemId) ?? 0,
-        }))
+        (itemList.items ?? [])
+          .filter(item => item.price > 0)   // 기본(무료) 아이템은 상점에 표시하지 않음
+          .map(item => ({
+            ...item,
+            ownedCount: countMap.get(item.itemId) ?? 0,
+          }))
       );
     } catch {
       setError(true);

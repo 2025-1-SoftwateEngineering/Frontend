@@ -13,7 +13,7 @@ export function useFriendStore() {
     setError(null);
     try {
       const res = await memberApi.getFriends('-1', 50);
-      const accepted = res.data.filter((f) => f.state === 'ACCEPTED');
+      const accepted = (res.data ?? []).filter((f) => f.state === 'ACCEPTED');
       const profiles = await Promise.all(
         accepted.map((f) => memberApi.getFriendProfile(f.toMemberId)),
       );
@@ -40,7 +40,7 @@ export function useFriendStore() {
     try {
       const res = await memberApi.getFriendRequests('-1', 50);
       // WAITING 상태만 표시 (아직 처리 안 된 요청)
-      const waiting = res.data.filter((r) => r.state === 'WAITING');
+      const waiting = (res.data ?? []).filter((r) => r.state === 'WAITING');
       setRequests(
         waiting.map((r) => ({
           requestId: r.fromMemberId, // PATCH /friends/{fromMemberId} 와 맞춤

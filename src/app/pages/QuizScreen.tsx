@@ -64,11 +64,13 @@ export function QuizScreen() {
   const submitResultRef = useRef<{ hasNext: boolean; nextCurrent: number | null } | null>(null);
 
   const [timeItems, setTimeItems] = useState<MyItemInfo[]>([]);
+  const currentIndexRef = useRef<number>(0);
 
   const isTimeWarning = timer <= WARN_SECONDS;
 
   const loadQuestion = useCallback(async (current: number) => {
     if (!choiceId) return;
+    currentIndexRef.current = current;
     const q = await quizApi.getChoiceQuestion(Number(choiceId), current);
     if (q) {
       setQuestion(q);
@@ -134,7 +136,7 @@ export function QuizScreen() {
     setAnswered(true);
 
     try {
-      const result = await quizApi.submitChoiceAnswer(Number(choiceId), optionId ?? 0, question.id);
+      const result = await quizApi.submitChoiceAnswer(Number(choiceId), optionId ?? 0, currentIndexRef.current);
       const isCorrect = result.isCorrect;
 
       setTotalAnswered((n) => n + 1);

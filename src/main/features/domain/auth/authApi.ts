@@ -10,34 +10,33 @@ interface AuthTokenResult {
 }
 
 interface MyProfileResult {
-  id?:              number;
-  nickname:         string;
-  email:            string;
-  streak:           number;
-  totalStudyDays?:  number;
-  coin:             number;
-  authorize?:       string;
-  profileUrl?:      string;
+  nickname:       string;
+  email:          string;
+  streak:         number;
+  totalStudyDays?: number;
+  coin:           number;
+  authorize?:     string;
+  profileUrl?:    string;
+  images?:        { imageUrl: string; itemType: string }[];
 }
 
 // /members/me 결과를 Member 타입으로 변환
 function toMember(profile: MyProfileResult, fallbackProfileUrl?: string): Member {
   const now = new Date().toISOString();
   return {
-    member_id:          profile.id ?? 0,
-    email:              profile.email,
-    nickname:           profile.nickname,
-    authorize:          (profile.authorize as Authorize) ?? 'ROLE_USER',
-    login_at:           now,
-    streak:             profile.streak,
-    totalStudyDays:     profile.totalStudyDays,
-    coin:               profile.coin,
-    created_at:         now,
-    updated_at:         now,
-    deleted_at:         null,
-    activeProfilePhoto: null,
-    activeProfileBg:    null,
-    profileUrl:         profile.profileUrl ?? fallbackProfileUrl ?? '',
+    member_id:     0,
+    email:         profile.email,
+    nickname:      profile.nickname,
+    authorize:     (profile.authorize as Authorize) ?? 'ROLE_USER',
+    login_at:      now,
+    streak:        profile.streak,
+    totalStudyDays: profile.totalStudyDays,
+    coin:          profile.coin,
+    created_at:    now,
+    updated_at:    now,
+    deleted_at:    null,
+    activeImages:  profile.images ?? [],
+    profileUrl:    profile.profileUrl ?? fallbackProfileUrl ?? '',
   };
 }
 

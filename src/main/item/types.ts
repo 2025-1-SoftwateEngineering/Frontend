@@ -7,13 +7,10 @@ export type ItemType =
   | 'CHOICE_TIME_30'
   | 'CROSSWORD_HINT_START'
   | 'CROSSWORD_HINT_MIDDLE'
-  | 'PET_BG_1'
-  | 'PET_BG_2'
-  | 'BACKGROUND'
-  | 'PROFILE_PHOTO_1'
-  | 'PROFILE_PHOTO_2'
-  | 'PROFILE_BG_1'
-  | 'PROFILE_BG_2';
+  | 'PET_BG'
+  | 'PET_ACCESSORY'
+  | 'PROFILE_PHOTO'
+  | 'PROFILE_BG';
 
 /**
  * item (아이템)

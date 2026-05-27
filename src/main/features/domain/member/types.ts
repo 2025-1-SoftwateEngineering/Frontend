@@ -40,10 +40,8 @@ export interface Member {
   updated_at: string;
   /** 탈퇴 시각 (NULL = 미탈퇴, 값 존재 = 탈퇴) */
   deleted_at: string | null;
-  /** 현재 적용 중인 프로필 사진 아이템 ID (null = 기본) */
-  activeProfilePhoto: number | null;
-  /** 현재 적용 중인 프로필 배경 아이템 ID (null = 기본) */
-  activeProfileBg: number | null;
+  /** 현재 적용 중인 프로필 이미지 목록 (PROFILE_PHOTO, PROFILE_BG) */
+  activeImages?: { imageUrl: string; itemType: string }[];
   /** GCS에 업로드된 프로필 사진 URL (빈 문자열 = 미설정) */
   profileUrl: string;
 }
