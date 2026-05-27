@@ -2,8 +2,15 @@ import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Droplets, Utensils, ChevronLeft, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import bgDefault from '../assets/bg_default.png';
+import bgDefault    from '../assets/BG_DEFB_Default_1.png';
+import bgLeaf       from '../assets/BG_BG07_Leaf_1.png';
+import bgMountains  from '../assets/BG_BG08_Mountains_1.png';
+import bgRural      from '../assets/BG_BG09_rural_1.png';
+import bgUrban      from '../assets/BG_BG10_urban_1.png';
 import petEgg from '../assets/pet_PE_Egg_1.png';
+
+/** 스토어 PET_BG 유료 아이템 인덱스 순서 → 로컬 PNG (PetProfileEditScreen의 PET_BG_IMAGES와 동일 순서) */
+const PET_BG_PNG = [bgLeaf, bgMountains, bgRural, bgUrban];
 import petBaby from '../assets/pet_PB_Baby_1.png';
 import petGrowing from '../assets/pet_PGI_Growing_1.png';
 import petGrown from '../assets/pet_PG_Grown_1.png';
@@ -11,6 +18,7 @@ import type { PetStage } from '../../main/features/domain/pet/types';
 import { petApi } from '../../main/features/domain/pet/petApi';
 import type { PetInfo } from '../../main/features/domain/pet/petApi';
 import { storeApi } from '../../main/features/domain/store/storeApi';
+import { mockLocalStore } from '../../main/features/domain/store/mockLocalStore';
 
 
 const MAX_HUNGER   = 250;
@@ -42,6 +50,7 @@ export function PetScreen() {
   const [petWaterItemId,  setPetWaterItemId]  = useState<number | null>(null);
   const [foodCount,       setFoodCount]       = useState(0);
   const [waterCount,      setWaterCount]      = useState(0);
+  const [bgImgSrc,        setBgImgSrc]        = useState<string>(bgDefault);
   const [loading,         setLoading]         = useState(true);
   const [error,           setError]           = useState('');
   const [actionLoading,   setActionLoading]   = useState(false);
@@ -73,6 +82,13 @@ export function PetScreen() {
         const water = itemList.items.find(i => i.itemType === 'PET_WATER');
         if (food)  setPetFoodItemId(food.itemId);
         if (water) setPetWaterItemId(water.itemId);
+
+        // 배경: activeBackgroundUrl 대신 로컬 PNG 매핑 사용 (백엔드 URL 로드 실패 방지)
+        const paidBgItems = itemList.items.filter(i => i.itemType === 'PET_BG' && i.price > 0);
+        const bgPngMap = new Map<number, string>();
+        paidBgItems.forEach((item, i) => { if (PET_BG_PNG[i]) bgPngMap.set(item.itemId, PET_BG_PNG[i]!); });
+        const activeBgId = pet.activeBackgroundItemId;
+        setBgImgSrc(activeBgId != null ? (bgPngMap.get(activeBgId) ?? bgDefault) : bgDefault);
 
         // 실제 보유 수량은 my-items에서 가져옴 (pets/me의 foodCount는 0/1만 반환)
         const myFood  = myList.items.find(i => i.item.itemType === 'PET_FOOD');
@@ -153,7 +169,7 @@ export function PetScreen() {
     >
       {/* 배경 이미지 */}
       <img
-        src={petInfo.activeBackgroundUrl ?? bgDefault}
+        src={bgImgSrc}
         alt="배경"
         style={{
           position: 'absolute',
@@ -283,18 +299,39 @@ export function PetScreen() {
           background: 'rgba(0,0,0,0.25)',
           borderRadius: '50%', filter: 'blur(8px)',
         }} />
-        <motion.img
-          src={getPetImage(petInfo.stage)}
-          alt={`펫 레벨 ${petInfo.level}`}
+        <motion.div
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            width: 180, height: 180,
-            objectFit: 'contain',
-            filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.3))',
-            imageRendering: 'pixelated',
-          }}
-        />
+          style={{ position: 'relative', width: 180, height: 180 }}
+        >
+          <img
+            src={getPetImage(petInfo.stage)}
+            alt={`펫 레벨 ${petInfo.level}`}
+            style={{
+              width: 180, height: 180,
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.3))',
+              imageRendering: 'pixelated',
+            }}
+          />
+          {/* 백엔드 악세사리 URL → 없으면 로컬 목 장착 아이템으로 폴백 */}
+          {(() => {
+            const accUrl = petInfo.activeAccessoryUrl
+              ?? mockLocalStore.getEquippedAcc()?.imgSrc
+              ?? null;
+            return accUrl ? (
+              <img
+                src={accUrl}
+                alt="악세사리"
+                style={{
+                  position: 'absolute', inset: 0,
+                  width: '100%', height: '100%',
+                  objectFit: 'contain', pointerEvents: 'none',
+                }}
+              />
+            ) : null;
+          })()}
+        </motion.div>
       </motion.div>
 
       {/* 하단 UI */}

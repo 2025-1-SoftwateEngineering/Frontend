@@ -214,7 +214,7 @@ export function QuizScreen() {
         <div className="flex flex-col h-dvh bg-surface-page">
           <div className="flex-shrink-0 px-4 pt-4 pb-4 bg-white border-b border-surface-lighter">
             <div className="flex items-center gap-2">
-              <button onClick={() => navigate('/choices')}
+              <button onClick={() => navigate(-1)}
                 className="text-text-sub bg-transparent border-none cursor-pointer">
                 <ChevronLeft size={26} />
               </button>
@@ -251,7 +251,7 @@ export function QuizScreen() {
               <button onClick={handleRetry} className="w-full rounded-2xl py-4 text-base font-bold bg-brand-blue text-text-main border-none cursor-pointer">
                 다시 풀기
               </button>
-              <button onClick={() => navigate('/choices')} className="w-full rounded-2xl py-4 text-base font-semibold bg-surface-muted text-text-main border-none cursor-pointer">
+              <button onClick={() => navigate(-1)} className="w-full rounded-2xl py-4 text-base font-semibold bg-surface-muted text-text-main border-none cursor-pointer">
                 목록으로 돌아가기
               </button>
             </div>
@@ -269,7 +269,7 @@ export function QuizScreen() {
         {/* 헤더 */}
         <div className="flex-shrink-0 px-4 pt-4 pb-4 bg-white border-b border-surface-lighter">
           <div className="flex items-center gap-2 mb-3">
-            <button onClick={() => navigate('/choices')} aria-label="뒤로가기"
+            <button onClick={() => navigate(-1)} aria-label="뒤로가기"
               className="text-text-sub bg-transparent border-none cursor-pointer">
               <ChevronLeft size={26} />
             </button>

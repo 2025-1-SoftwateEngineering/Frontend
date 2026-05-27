@@ -2,30 +2,51 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { ChevronLeft, Check } from 'lucide-react';
-import bgDefault from '../assets/bg_default.png';
-import bgBG1 from '../assets/BG_BG01_type1_1.png';
-import bgLeaf from '../assets/BG_BG07_Leaf_1.png';
-import petEgg from '../assets/pet_PE_Egg_1.png';
-import petBaby from '../assets/pet_PB_Baby_1.png';
-import petGrowing from '../assets/pet_PGI_Growing_1.png';
-import petGrown from '../assets/pet_PG_Grown_1.png';
-import { petApi } from '../../main/features/domain/pet/petApi';
+import bgDefault    from '../assets/BG_DEFB_Default_1.png';
+import bgLeaf       from '../assets/BG_BG07_Leaf.svg';
+import bgMountains  from '../assets/BG_BG08_Mountains.svg';
+import bgRural      from '../assets/BG_BG09_rural.svg';
+import bgUrban      from '../assets/BG_BG10_urban.svg';
+import accMuffler        from '../assets/clothes_NK01_muffler.svg';
+import accPendant        from '../assets/clothes_NK02_pendant.svg';
+import accChain          from '../assets/clothes_NK03_Chain.svg';
+import accHairband       from '../assets/clothes_HD01_Hairband.svg';
+// 실제 PetScreen 적용용 PNG (썸네일은 SVG, 실제 표시는 PNG)
+import accMufflerPng     from '../assets/clothes_NK01_muffler_1_PB.png';
+import accPendantPng     from '../assets/clothes_NK02_pendant_1_PG.png';
+import accChainPng       from '../assets/clothes_NK03_Chain_1_PGI.png';
+import accHairbandPng    from '../assets/clothes_HD01_Hairband_1_PGI.png';
+import petEgg            from '../assets/pet_PE_Egg_1.png';
+import petBaby      from '../assets/pet_PB_Baby_1.png';
+import petGrowing   from '../assets/pet_PGI_Growing_1.png';
+import petGrown     from '../assets/pet_PG_Grown_1.png';
+import { petApi }   from '../../main/features/domain/pet/petApi';
 import type { PetInfo } from '../../main/features/domain/pet/petApi';
 import { storeApi } from '../../main/features/domain/store/storeApi';
 import type { ItemType } from '../../main/item/types';
+import { mockLocalStore } from '../../main/features/domain/store/mockLocalStore';
 
-// ─── 상수 ───────────────────────────────────────────────────────────────────────
+// ─── 이미지 배열 (백엔드 유료 아이템 인덱스 순서와 1:1 매핑) ──────────────────
+const PET_BG_IMAGES = [
+  { src: bgLeaf,      label: '숲속' },
+  { src: bgMountains, label: '산' },
+  { src: bgRural,     label: '전원' },
+  { src: bgUrban,     label: '도시' },
+];
 
-/** 아이템 이름 → 로컬 이미지 (백엔드가 imageUrl을 store API에 노출하기 전까지 사용) */
-const PET_BG_IMAGE_BY_NAME: Record<string, string> = {
-  '기본 배경':   bgDefault,
-  '기본 펫 배경': bgDefault,
-  '펫 배경 1':   bgBG1,
-  '펫 배경 2':   bgLeaf,
-};
+const PET_ACC_IMAGES = [
+  { src: accMuffler,  label: '목도리' },
+  { src: accPendant,  label: '펜던트' },
+  { src: accChain,    label: '체인' },
+  { src: accHairband, label: '헤어밴드' },
+];
 
-/** selectedBgId 에 사용할 센티넬: "기본 배경 (아이템 없음)" 상태 */
-const DEFAULT_BG_ID = 0;
+/** PetScreen 실제 렌더링용 PNG (인덱스가 PET_ACC_IMAGES와 1:1 대응) */
+const PET_ACC_PNG = [accMufflerPng, accPendantPng, accChainPng, accHairbandPng];
+
+/** 기본 배경 / 악세사리 없음 센티넬 (실제 itemId는 0이 없음) */
+const DEFAULT_BG_ID  = 0;
+const DEFAULT_ACC_ID = 0;
 
 function getPetImage(stage: string): string {
   if (stage === 'EGG')     return petEgg;
@@ -34,17 +55,19 @@ function getPetImage(stage: string): string {
   return petGrown;
 }
 
-// ─── 타입 ───────────────────────────────────────────────────────────────────────
+// ─── 타입 ─────────────────────────────────────────────────────────────────────
 
-interface BgDisplayItem {
+interface DisplayItem {
   itemId:   number;
   itemType: ItemType;
   name:     string;
   owned:    boolean;
   equipped: boolean;
+  img:      string;
+  label:    string;
 }
 
-// ─── 서브 컴포넌트 ──────────────────────────────────────────────────────────────
+// ─── 서브 컴포넌트 ─────────────────────────────────────────────────────────────
 
 function SectionTitle({ emoji, label }: { emoji: string; label: string }) {
   return (
@@ -56,43 +79,36 @@ function SectionTitle({ emoji, label }: { emoji: string; label: string }) {
   );
 }
 
-function BgCard({
-  item,
-  selected,
-  onSelect,
-  locked = false,
+function ItemCard({
+  img, label, selected, locked, onSelect,
 }: {
-  item: BgDisplayItem;
-  selected: boolean;
-  onSelect: () => void;
-  locked?: boolean;
+  img?: string; label: string; selected: boolean; locked?: boolean; onSelect: () => void;
 }) {
-  const image = PET_BG_IMAGE_BY_NAME[item.name];
-  const label = item.name;
-
   return (
     <motion.button
       whileTap={locked ? {} : { scale: 0.95 }}
       onClick={onSelect}
       style={{
-        position: 'relative',
-        borderRadius: 14,
-        overflow: 'hidden',
+        position: 'relative', borderRadius: 14, overflow: 'hidden',
         aspectRatio: '1',
         border: selected ? '2.5px solid #94B9F3' : '2px solid transparent',
         cursor: locked ? 'not-allowed' : 'pointer',
-        background: 'none',
-        padding: 0,
-        boxShadow: selected
-          ? '0 0 0 3px rgba(148,185,243,0.3)'
-          : '0 2px 6px rgba(0,0,0,0.08)',
+        background: 'none', padding: 0,
+        boxShadow: selected ? '0 0 0 3px rgba(148,185,243,0.3)' : '0 2px 6px rgba(0,0,0,0.08)',
         opacity: locked ? 0.55 : 1,
       }}
     >
-      {image ? (
-        <img src={image} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      {img ? (
+        <img src={img} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       ) : (
-        <div style={{ width: '100%', height: '100%', background: '#B8D0FA' }} />
+        /* 없음 카드 */
+        <div style={{
+          width: '100%', height: '100%',
+          background: '#ebebee',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{ fontSize: 20, color: '#aaa' }}>✕</span>
+        </div>
       )}
 
       {locked && (
@@ -129,16 +145,24 @@ function BgCard({
   );
 }
 
-// ─── 메인 컴포넌트 ──────────────────────────────────────────────────────────────
+// ─── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
 
 export function PetProfileEditScreen() {
   const navigate = useNavigate();
-  const [petInfo,         setPetInfo]         = useState<PetInfo | null>(null);
-  const [bgItems,         setBgItems]         = useState<BgDisplayItem[]>([]);
-  const [selectedBgId,    setSelectedBgId]    = useState<number>(DEFAULT_BG_ID);
-  const [defaultBgItemId, setDefaultBgItemId] = useState<number | null>(null);
-  const [loading,         setLoading]         = useState(true);
-  const [saving,          setSaving]          = useState(false);
+  const [petInfo,          setPetInfo]          = useState<PetInfo | null>(null);
+
+  // 배경
+  const [bgItems,          setBgItems]          = useState<DisplayItem[]>([]);
+  const [selectedBgId,     setSelectedBgId]     = useState<number>(DEFAULT_BG_ID);
+  const [defaultBgItemId,  setDefaultBgItemId]  = useState<number | null>(null);
+
+  // 악세사리
+  const [accItems,         setAccItems]         = useState<DisplayItem[]>([]);
+  const [selectedAccId,    setSelectedAccId]    = useState<number>(DEFAULT_ACC_ID);
+  const [defaultAccItemId, setDefaultAccItemId] = useState<number | null>(null);
+
+  const [loading,  setLoading]  = useState(true);
+  const [saving,   setSaving]   = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -147,7 +171,6 @@ export function PetProfileEditScreen() {
         storeApi.getItems(),
         storeApi.getMyItems(),
       ]);
-
       setPetInfo(pet);
 
       const myMap = new Map<number, { isEquipped: boolean }>();
@@ -155,49 +178,106 @@ export function PetProfileEditScreen() {
         myMap.set(mi.item.itemId, { isEquipped: mi.isEquipped });
       }
 
-      // 기본 배경 아이템 ID — storeApi.getItems(스토어 목록)와 getMyItems(보유 목록) 양쪽에서 탐색
-      // (백엔드가 price=0 아이템을 스토어 목록에 노출하지 않을 수 있으므로 보유 목록도 확인)
-      const defaultFromAll = allItems.items.find(i => i.itemType === 'PET_BG' && i.price === 0);
-      const defaultFromMy  = myItems.items.find(mi => mi.item.itemType === 'PET_BG' && mi.item.price === 0);
-      const foundDefaultId = defaultFromAll?.itemId ?? defaultFromMy?.item.itemId ?? null;
-      setDefaultBgItemId(foundDefaultId);
+      // ─── 배경 ───────────────────────────────────────────────────────────────
+      // ※ defaultBgItemId는 유저가 실제 보유한 경우에만 세팅 (카탈로그에만 있는 아이템을 useItem 하면 STORE404_2)
+      const defaultBgMy  = myItems.items.find(mi => mi.item.itemType === 'PET_BG' && mi.item.price === 0);
+      const foundDefaultBgId = defaultBgMy?.item.itemId ?? null;
+      setDefaultBgItemId(foundDefaultBgId);
 
-      // 유료 배경 목록: 스토어 목록 + 보유 목록 모두 합산 (스토어에서 내려오지 않는 아이템 대응)
-      const bgItemIdsSeen = new Set<number>();
-      const bgList: BgDisplayItem[] = [];
+      const paidBgItems  = allItems.items.filter(i => i.itemType === 'PET_BG' && i.price > 0);
+      const bgSeen       = new Set<number>();
+      const bgList: DisplayItem[] = [];
 
-      for (const item of allItems.items) {
-        if (item.itemType !== 'PET_BG' || item.price === 0) continue;
-        bgItemIdsSeen.add(item.itemId);
+      paidBgItems.forEach((item, i) => {
+        bgSeen.add(item.itemId);
         const mine = myMap.get(item.itemId);
         bgList.push({
-          itemId:   item.itemId,
-          itemType: item.itemType,
-          name:     item.name,
-          owned:    mine !== undefined,
-          equipped: mine?.isEquipped ?? false,
+          itemId: item.itemId, itemType: item.itemType, name: item.name,
+          owned: mine !== undefined, equipped: mine?.isEquipped ?? false,
+          img:   PET_BG_IMAGES[i]?.src   ?? bgDefault,
+          label: PET_BG_IMAGES[i]?.label ?? item.name,
         });
-      }
-      // 보유 중이지만 스토어 목록에 없는 유료 배경 (단종 아이템 등)
+      });
+      // 보유 중이지만 스토어에 없는 아이템
       for (const mi of myItems.items) {
         if (mi.item.itemType !== 'PET_BG' || mi.item.price === 0) continue;
-        if (bgItemIdsSeen.has(mi.item.itemId)) continue;
+        if (bgSeen.has(mi.item.itemId)) continue;
+        const i = bgList.length;
         bgList.push({
-          itemId:   mi.item.itemId,
-          itemType: mi.item.itemType,
-          name:     mi.item.name,
-          owned:    true,
-          equipped: mi.isEquipped,
+          itemId: mi.item.itemId, itemType: mi.item.itemType, name: mi.item.name,
+          owned: true, equipped: mi.isEquipped,
+          img:   PET_BG_IMAGES[i]?.src   ?? bgDefault,
+          label: PET_BG_IMAGES[i]?.label ?? mi.item.name,
+        });
+      }
+      setBgItems(bgList);
+
+      // ─── 악세사리 ────────────────────────────────────────────────────────────
+      // ※ defaultAccItemId도 보유 여부 기반으로만 세팅
+      const defaultAccMy  = myItems.items.find(mi => mi.item.itemType === 'PET_ACCESSORY' && mi.item.price === 0);
+      const foundDefaultAccId = defaultAccMy?.item.itemId ?? null;
+      setDefaultAccItemId(foundDefaultAccId);
+
+      const paidAccItems  = allItems.items.filter(i => i.itemType === 'PET_ACCESSORY' && i.price > 0);
+      const accSeen       = new Set<number>();
+      const accList: DisplayItem[] = [];
+
+      paidAccItems.forEach((item, i) => {
+        accSeen.add(item.itemId);
+        const mine = myMap.get(item.itemId);
+        accList.push({
+          itemId: item.itemId, itemType: item.itemType, name: item.name,
+          owned: mine !== undefined, equipped: mine?.isEquipped ?? false,
+          img:   PET_ACC_IMAGES[i]?.src   ?? '',
+          label: PET_ACC_IMAGES[i]?.label ?? item.name,
+        });
+      });
+      for (const mi of myItems.items) {
+        if (mi.item.itemType !== 'PET_ACCESSORY' || mi.item.price === 0) continue;
+        if (accSeen.has(mi.item.itemId)) continue;
+        const i = accList.length;
+        accList.push({
+          itemId: mi.item.itemId, itemType: mi.item.itemType, name: mi.item.name,
+          owned: true, equipped: mi.isEquipped,
+          img:   PET_ACC_IMAGES[i]?.src   ?? '',
+          label: PET_ACC_IMAGES[i]?.label ?? mi.item.name,
         });
       }
 
-      setBgItems(bgList);
+      // ── 백엔드에 없는 목 악세사리: 로컬 구매 내역 반영 ──────────────────────────
+      let initMockAccId: number | null = null;
+      if (paidAccItems.length === 0) {
+        const ownedMockIds = new Set(mockLocalStore.getOwnedAccIds());
+        const MOCK_NAMES  = ['목도리', '펜던트', '체인', '헤어밴드'];
+        const equippedMock = mockLocalStore.getEquippedAcc();
+        for (let i = 0; i < PET_ACC_IMAGES.length; i++) {
+          const mockId = -(i + 1);
+          accList.push({
+            itemId: mockId,
+            itemType: 'PET_ACCESSORY' as ItemType,
+            name: MOCK_NAMES[i] ?? `악세사리 ${i + 1}`,
+            owned: ownedMockIds.has(mockId),
+            equipped: equippedMock?.itemId === mockId,
+            img:   PET_ACC_IMAGES[i]?.src   ?? '',
+            label: PET_ACC_IMAGES[i]?.label ?? '',
+          });
+        }
+        // 로컬 장착 아이템이 있으면 기록 (아래 setSelectedAccId에서 사용)
+        if (equippedMock != null && equippedMock.itemId < 0) {
+          initMockAccId = equippedMock.itemId;
+        }
+      }
 
-      // ✅ pet API의 activeBackgroundItemId를 ground truth로 사용
-      // bgList에 없는 아이템이더라도 foundDefaultId와 비교해 유료 여부 판단
-      const activeBgId = pet.activeBackgroundItemId;
-      const isActivePaidBg = activeBgId !== null && activeBgId !== foundDefaultId;
-      setSelectedBgId(isActivePaidBg ? activeBgId! : DEFAULT_BG_ID);
+      setAccItems(accList);
+
+      // ─── 초기 선택값 ──────────────────────────────────────────────────────────
+      const activeBgId  = pet.activeBackgroundItemId;
+      const isDefaultBg = activeBgId === null || activeBgId === foundDefaultBgId;
+      setSelectedBgId(isDefaultBg ? DEFAULT_BG_ID : activeBgId!);
+
+      // 악세사리: 백엔드 활성 아이템 → 로컬 목 장착 → 없음 순으로 결정
+      setSelectedAccId(pet.activeAccessoryItemId ?? initMockAccId ?? DEFAULT_ACC_ID);
+
     } catch {
       navigate(-1);
     } finally {
@@ -207,48 +287,68 @@ export function PetProfileEditScreen() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const currentBgName = bgItems.find(b => b.itemId === selectedBgId)?.name ?? null;
-  // 미리보기 우선순위:
-  // 1) 기본 배경 선택 → bgDefault
-  // 2) 유료 배경 선택 → 로컬 이미지 매핑
-  // 3) 로컬 이미지 없으면 → petInfo.activeBackgroundUrl (서버 URL) 사용
-  // 4) 모두 없으면 → bgDefault
-  const previewImage = (() => {
+  // ─── 미리보기 ──────────────────────────────────────────────────────────────
+  const previewBgImg = (() => {
     if (selectedBgId === DEFAULT_BG_ID) return bgDefault;
-    if (currentBgName && PET_BG_IMAGE_BY_NAME[currentBgName]) return PET_BG_IMAGE_BY_NAME[currentBgName];
-    if (selectedBgId === petInfo?.activeBackgroundItemId && petInfo?.activeBackgroundUrl) {
+    const found = bgItems.find(b => b.itemId === selectedBgId);
+    if (found?.img) return found.img;
+    if (selectedBgId === petInfo?.activeBackgroundItemId && petInfo?.activeBackgroundUrl)
       return petInfo.activeBackgroundUrl;
-    }
     return bgDefault;
   })();
 
+  const previewAccImg = (() => {
+    if (selectedAccId === DEFAULT_ACC_ID) return null;
+    const found = accItems.find(a => a.itemId === selectedAccId);
+    if (found?.img) return found.img;
+    if (selectedAccId === petInfo?.activeAccessoryItemId && petInfo?.activeAccessoryUrl)
+      return petInfo.activeAccessoryUrl;
+    return null;
+  })();
+
+  // ─── 저장 ──────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (saving) return;
 
-    // ✅ activeBackgroundItemId를 ground truth로 사용
-    // bgItems(유료 목록)가 비어있어도 정확히 "현재 기본 배경 여부"를 판단
-    const activeBgId = petInfo?.activeBackgroundItemId ?? null;
-    const isCurrentlyDefault = activeBgId === null || activeBgId === defaultBgItemId;
-    const currentlyEquipped = isCurrentlyDefault ? DEFAULT_BG_ID : activeBgId!;
-    if (selectedBgId === currentlyEquipped) {
-      navigate(-1);
-      return;
-    }
+    const activeBgId           = petInfo?.activeBackgroundItemId ?? null;
+    const isCurrentlyDefaultBg = activeBgId === null || activeBgId === defaultBgItemId;
+    const currentlyEquippedBg  = isCurrentlyDefaultBg ? DEFAULT_BG_ID : activeBgId!;
+    // 악세사리: 백엔드 활성 → 로컬 목 장착 → 없음 순으로 현재 상태 판단
+    const mockEquipped = mockLocalStore.getEquippedAcc();
+    const currentlyEquippedAcc = petInfo?.activeAccessoryItemId
+      ?? (mockEquipped != null ? mockEquipped.itemId : DEFAULT_ACC_ID);
+
+    const bgChanged  = selectedBgId  !== currentlyEquippedBg;
+    const accChanged = selectedAccId !== currentlyEquippedAcc;
+
+    if (!bgChanged && !accChanged) { navigate(-1); return; }
 
     setSaving(true);
     try {
-      if (selectedBgId === DEFAULT_BG_ID) {
-        // 기본 배경으로 되돌리기: 백엔드의 "기본 펫 배경" 아이템 사용
-        if (defaultBgItemId != null) {
-          await storeApi.useItem(defaultBgItemId);
+      if (bgChanged) {
+        if (selectedBgId === DEFAULT_BG_ID) {
+          if (defaultBgItemId != null) await storeApi.useItem(defaultBgItemId);
+          else { alert('기본 배경 아이템 정보를 찾을 수 없어요.'); setSaving(false); return; }
         } else {
-          // 기본 배경 아이템 ID를 찾지 못한 경우: 저장 불가 안내
-          alert('기본 배경 아이템 정보를 찾을 수 없어요. 잠시 후 다시 시도해 주세요.');
-          setSaving(false);
-          return;
+          await storeApi.useItem(selectedBgId);
         }
-      } else {
-        await storeApi.useItem(selectedBgId);
+      }
+      if (accChanged) {
+        if (selectedAccId === DEFAULT_ACC_ID) {
+          // 악세사리 없음
+          // 실제 백엔드 악세사리가 장착된 경우에만 API 호출 (mock 전용일 땐 스킵)
+          const hasRealAccItems = accItems.some(a => a.itemId > 0);
+          if (hasRealAccItems && defaultAccItemId != null) await storeApi.useItem(defaultAccItemId);
+          mockLocalStore.unequipAcc();
+        } else if (selectedAccId < 0) {
+          // 목 아이템 장착 (로컬만) — PetScreen에서 PNG로 표시되도록 PNG src 저장
+          const idx = -(selectedAccId + 1); // -1→0, -2→1, -3→2, -4→3
+          const pngSrc = PET_ACC_PNG[idx] ?? accItems.find(a => a.itemId === selectedAccId)?.img ?? '';
+          if (pngSrc) mockLocalStore.equipAcc(selectedAccId, pngSrc);
+        } else {
+          await storeApi.useItem(selectedAccId);
+          mockLocalStore.unequipAcc(); // 실제 아이템 장착 시 로컬 목 해제
+        }
       }
       navigate(-1);
     } catch {
@@ -265,17 +365,10 @@ export function PetProfileEditScreen() {
     );
   }
 
-  const ownedBgItems   = bgItems.filter(b => b.owned);
-  const unownedBgItems = bgItems.filter(b => !b.owned);
-
-  // 항상 선택 가능한 "기본 배경" 카드 (하드코딩)
-  const DEFAULT_BG_ITEM: BgDisplayItem = {
-    itemId:   DEFAULT_BG_ID,
-    itemType: 'PET_BG',
-    name:     '기본 배경',
-    owned:    true,
-    equipped: false,
-  };
+  const ownedBgItems    = bgItems.filter(b => b.owned);
+  const unownedBgItems  = bgItems.filter(b => !b.owned);
+  const ownedAccItems   = accItems.filter(a => a.owned);
+  const unownedAccItems = accItems.filter(a => !a.owned);
 
   return (
     <div style={{ minHeight: '100dvh', background: '#e8e8e8' }}>
@@ -304,17 +397,15 @@ export function PetProfileEditScreen() {
           {/* 미리보기 */}
           <div className="relative flex-shrink-0 overflow-hidden" style={{ height: 220 }}>
             <img
-              src={previewImage ?? bgDefault}
+              src={previewBgImg}
               alt="배경 미리보기"
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
             />
-
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
               background: 'linear-gradient(to top, #f8f9ff 0%, transparent 100%)',
               pointerEvents: 'none',
             }} />
-
             <div style={{
               position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)',
               background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(8px)',
@@ -332,52 +423,100 @@ export function PetProfileEditScreen() {
                   position: 'absolute', bottom: -4, width: 80, height: 12,
                   background: 'rgba(0,0,0,0.15)', borderRadius: '50%', filter: 'blur(5px)',
                 }} />
-                <motion.img
-                  src={getPetImage(petInfo.stage)}
-                  alt="펫 미리보기"
+                {/* 펫 + 악세사리 오버레이 */}
+                <motion.div
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                  style={{
-                    width: 120, height: 120,
-                    objectFit: 'contain',
-                    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))',
-                    imageRendering: 'pixelated',
-                  }}
-                />
+                  style={{ position: 'relative', width: 120, height: 120 }}
+                >
+                  <img
+                    src={getPetImage(petInfo.stage)}
+                    alt="펫 미리보기"
+                    style={{
+                      width: 120, height: 120, objectFit: 'contain',
+                      filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))',
+                      imageRendering: 'pixelated',
+                    }}
+                  />
+                  {previewAccImg && (
+                    <img
+                      src={previewAccImg}
+                      alt="악세사리 미리보기"
+                      style={{
+                        position: 'absolute', inset: 0,
+                        width: '100%', height: '100%',
+                        objectFit: 'contain', pointerEvents: 'none',
+                      }}
+                    />
+                  )}
+                </motion.div>
               </div>
             )}
           </div>
 
-          {/* 배경 선택 */}
+          {/* 배경 / 악세사리 선택 */}
           <div className="px-5 py-5">
-            <SectionTitle emoji="🖼️" label="프로필 배경" />
 
-            {/* 기본 배경 + 보유 중인 유료 배경 */}
+            {/* ── 배경 ── */}
+            <SectionTitle emoji="🖼️" label="펫 배경" />
+
             <p style={{ fontSize: 12, color: '#737373', marginBottom: 10 }}>보유 중</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 22 }}>
-              {/* 기본 배경은 항상 첫 번째 */}
-              <BgCard
-                item={DEFAULT_BG_ITEM}
+              <ItemCard
+                img={bgDefault} label="기본 배경"
                 selected={selectedBgId === DEFAULT_BG_ID}
                 onSelect={() => setSelectedBgId(DEFAULT_BG_ID)}
               />
               {ownedBgItems.map(item => (
-                <BgCard
-                  key={item.itemId}
-                  item={item}
+                <ItemCard
+                  key={item.itemId} img={item.img} label={item.label}
                   selected={selectedBgId === item.itemId}
                   onSelect={() => setSelectedBgId(item.itemId)}
                 />
               ))}
             </div>
 
-            {/* 미보유 유료 배경 */}
             {unownedBgItems.length > 0 && (
               <>
                 <p style={{ fontSize: 12, color: '#737373', marginBottom: 10 }}>미보유</p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 22 }}>
                   {unownedBgItems.map(item => (
-                    <BgCard key={item.itemId} item={item} selected={false} onSelect={() => {}} locked />
+                    <ItemCard key={item.itemId} img={item.img} label={item.label}
+                      selected={false} locked onSelect={() => {}} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            <div style={{ height: 8 }} />
+
+            {/* ── 악세사리 ── */}
+            <SectionTitle emoji="🎀" label="악세사리" />
+
+            <p style={{ fontSize: 12, color: '#737373', marginBottom: 10 }}>보유 중</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 22 }}>
+              {/* 없음 카드 */}
+              <ItemCard
+                label="없음"
+                selected={selectedAccId === DEFAULT_ACC_ID}
+                onSelect={() => setSelectedAccId(DEFAULT_ACC_ID)}
+              />
+              {ownedAccItems.map(item => (
+                <ItemCard
+                  key={item.itemId} img={item.img} label={item.label}
+                  selected={selectedAccId === item.itemId}
+                  onSelect={() => setSelectedAccId(item.itemId)}
+                />
+              ))}
+            </div>
+
+            {unownedAccItems.length > 0 && (
+              <>
+                <p style={{ fontSize: 12, color: '#737373', marginBottom: 10 }}>미보유</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                  {unownedAccItems.map(item => (
+                    <ItemCard key={item.itemId} img={item.img} label={item.label}
+                      selected={false} locked onSelect={() => {}} />
                   ))}
                 </div>
               </>
@@ -397,15 +536,10 @@ export function PetProfileEditScreen() {
             onClick={handleSave}
             disabled={saving}
             style={{
-              width: '100%',
-              padding: '16px 0',
-              borderRadius: 16,
-              border: 'none',
+              width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
               cursor: saving ? 'not-allowed' : 'pointer',
               background: saving ? '#c8ddf8' : '#B8D0FA',
-              color: '#1c1c1c',
-              fontSize: 16,
-              fontWeight: 700,
+              color: '#1c1c1c', fontSize: 16, fontWeight: 700,
             }}
           >
             {saving ? '저장 중...' : '저장하기'}
