@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { MobileLayout } from '../components/MobileLayout';
+import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { quizApi } from '../../main/features/domain/voca/vocaApi';
 import type { CrosswordListItem } from '../../main/features/domain/voca/vocaApi';
 
 export function CrosswordListScreen() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const isAdmin = currentUser?.authorize === 'ROLE_ADMIN';
   const [items, setItems] = useState<CrosswordListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -26,15 +29,25 @@ export function CrosswordListScreen() {
         <div className="flex-shrink-0 px-4 pt-4 pb-4 bg-white border-b border-surface-lighter">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/minigames')}
               className="text-text-sub bg-transparent border-none cursor-pointer"
             >
               <ChevronLeft size={26} />
             </button>
-            <div>
+            <div className="flex-1">
               <h1 className="text-[20px] font-bold text-text-main">십자말풀이</h1>
               <p className="text-[12px] text-text-sub">퍼즐을 선택해 도전해 보세요</p>
             </div>
+            {isAdmin && (
+              <button
+                onClick={() => navigate('/crosswords/create')}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl active:scale-95 transition-transform text-[13px] font-semibold"
+                style={{ background: '#B8D0FA', color: '#1c1c1c', border: 'none', cursor: 'pointer' }}
+              >
+                <Plus size={15} />
+                생성
+              </button>
+            )}
           </div>
         </div>
 

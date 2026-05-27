@@ -3,8 +3,6 @@ import { motion } from 'motion/react';
 import { Droplets, Utensils, ChevronLeft, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import bgDefault from '../assets/bg_default.png';
-import bgBG1 from '../assets/BG_BG01_type1_1.png';
-import bgLeaf from '../assets/BG_BG07_Leaf_1.png';
 import petEgg from '../assets/pet_PE_Egg_1.png';
 import petBaby from '../assets/pet_PB_Baby_1.png';
 import petGrowing from '../assets/pet_PGI_Growing_1.png';
@@ -14,10 +12,6 @@ import { petApi } from '../../main/features/domain/pet/petApi';
 import type { PetInfo } from '../../main/features/domain/pet/petApi';
 import { storeApi } from '../../main/features/domain/store/storeApi';
 
-const PET_BG_IMAGE: Partial<Record<string, string>> = {
-  PET_BG_1: bgBG1,
-  PET_BG_2: bgLeaf,
-};
 
 const MAX_HUNGER   = 250;
 const MAX_THIRST   = 100;
@@ -46,6 +40,8 @@ export function PetScreen() {
   const [petInfo,         setPetInfo]         = useState<PetInfo | null>(null);
   const [petFoodItemId,   setPetFoodItemId]   = useState<number | null>(null);
   const [petWaterItemId,  setPetWaterItemId]  = useState<number | null>(null);
+  const [foodCount,       setFoodCount]       = useState(0);
+  const [waterCount,      setWaterCount]      = useState(0);
   const [loading,         setLoading]         = useState(true);
   const [error,           setError]           = useState('');
   const [actionLoading,   setActionLoading]   = useState(false);
@@ -69,11 +65,20 @@ export function PetScreen() {
 
       // 스토어 실패해도 펫 화면은 표시
       try {
-        const itemList = await storeApi.getItems();
+        const [itemList, myList] = await Promise.all([
+          storeApi.getItems(),
+          storeApi.getMyItems(),
+        ]);
         const food  = itemList.items.find(i => i.itemType === 'PET_FOOD');
         const water = itemList.items.find(i => i.itemType === 'PET_WATER');
         if (food)  setPetFoodItemId(food.itemId);
         if (water) setPetWaterItemId(water.itemId);
+
+        // 실제 보유 수량은 my-items에서 가져옴 (pets/me의 foodCount는 0/1만 반환)
+        const myFood  = myList.items.find(i => i.item.itemType === 'PET_FOOD');
+        const myWater = myList.items.find(i => i.item.itemType === 'PET_WATER');
+        setFoodCount(myFood?.count ?? 0);
+        setWaterCount(myWater?.count ?? 0);
       } catch { /* 먹이/물 버튼만 비활성화됨 */ }
     } catch {
       setError('펫 정보를 불러올 수 없어요');
@@ -85,23 +90,25 @@ export function PetScreen() {
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const handleFeed = async () => {
-    if (!petFoodItemId || !petInfo || petInfo.foodCount === 0 || actionLoading) return;
+    if (!petFoodItemId || !petInfo || foodCount === 0 || actionLoading) return;
     setActionLoading(true);
     try {
       await storeApi.useItem(petFoodItemId);
       const updated = await petApi.getMyPet();
       setPetInfo(updated);
+      setFoodCount(prev => Math.max(0, prev - 1));
     } catch { /* 잔액 부족 등 - 무시 */ }
     finally { setActionLoading(false); }
   };
 
   const handleWater = async () => {
-    if (!petWaterItemId || !petInfo || petInfo.waterCount === 0 || actionLoading) return;
+    if (!petWaterItemId || !petInfo || waterCount === 0 || actionLoading) return;
     setActionLoading(true);
     try {
       await storeApi.useItem(petWaterItemId);
       const updated = await petApi.getMyPet();
       setPetInfo(updated);
+      setWaterCount(prev => Math.max(0, prev - 1));
     } catch { /* 잔액 부족 등 - 무시 */ }
     finally { setActionLoading(false); }
   };
@@ -146,7 +153,7 @@ export function PetScreen() {
     >
       {/* 배경 이미지 */}
       <img
-        src={PET_BG_IMAGE[petInfo.activeBackground ?? ''] ?? bgDefault}
+        src={petInfo.activeBackgroundUrl ?? bgDefault}
         alt="배경"
         style={{
           position: 'absolute',
@@ -311,7 +318,7 @@ export function PetScreen() {
               icon:    <Droplets size={24} color="#fff" />,
               color:   'linear-gradient(135deg, #5BC4FF 0%, #94B9F3 100%)',
               shadow:  '0 4px 16px rgba(91,196,255,0.45)',
-              count:   petInfo.waterCount,
+              count:   waterCount,
               onClick: handleWater,
             },
             {
@@ -319,7 +326,7 @@ export function PetScreen() {
               icon:    <Utensils size={24} color="#fff" />,
               color:   'linear-gradient(135deg, #FFB347 0%, #FF6B6B 100%)',
               shadow:  '0 4px 16px rgba(255,179,71,0.45)',
-              count:   petInfo.foodCount,
+              count:   foodCount,
               onClick: handleFeed,
             },
           ].map(({ label, icon, color, shadow, count, onClick }) => (
