@@ -32,12 +32,12 @@ const ITEM_META: Record<ItemType, { emoji: string; category: Category; descripti
 };
 
 const SECTIONS: { category: Category; emoji: string; label: string }[] = [
-  { category: 'streak',        emoji: '🔥', label: '연속학습파괴' },
-  { category: 'pet_grow',      emoji: '🐣', label: '애완동물성장' },
-  { category: 'pet_bg',        emoji: '🌿', label: '펫배경' },
-  { category: 'pet_accessory', emoji: '🎀', label: '펫치장' },
-  { category: 'profile_frame', emoji: '🖼️', label: '프로필테두리' },
-  { category: 'profile_bg',    emoji: '🌌', label: '프로필배경' },
+  { category: 'streak',        emoji: '🔥', label: '연속학습 파괴' },
+  { category: 'pet_grow',      emoji: '🐣', label: '애완동물 성장' },
+  { category: 'pet_bg',        emoji: '🌿', label: '펫 배경' },
+  { category: 'pet_accessory', emoji: '🎀', label: '펫 치장' },
+  { category: 'profile_frame', emoji: '🖼️', label: '프로필 테두리' },
+  { category: 'profile_bg',    emoji: '🌌', label: '프로필 배경' },
   { category: 'minigame',      emoji: '🎮', label: '미니게임' },
 ];
 
@@ -54,7 +54,7 @@ function SectionTitle({ emoji, label }: { emoji: string; label: string }) {
     <div className="flex items-center gap-2 mb-3 mt-6">
       <span style={{ fontSize: 16 }}>{emoji}</span>
       <span className="text-[15px] font-bold text-text-main">{label}</span>
-      <div className="flex-1 ml-1 h-px bg-surface-lighter" />
+      <div className="flex-1 ml-1" style={{ height: 1, background: '#F0EDD6' }} />
     </div>
   );
 }
