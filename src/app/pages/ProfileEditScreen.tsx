@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, Camera } from 'lucide-react';
+import { ChevronLeft, Camera, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import defaultProfileImg from '../assets/default_profile.svg';
 import { imageApi } from '../../main/features/domain/member/imageApi';
@@ -21,6 +21,8 @@ export function ProfileEditScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [nickname,          setNickname]          = useState(currentUser?.nickname ?? '');
+  const [confirmPassword,   setConfirmPassword]   = useState('');
+  const [showPassword,      setShowPassword]      = useState(false);
   const [saving,            setSaving]            = useState(false);
   const [error,             setError]             = useState('');
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -34,9 +36,10 @@ export function ProfileEditScreen() {
   const handleSave = async () => {
     setError('');
     if (!nickname.trim()) { setError('닉네임을 입력해 주세요.'); return; }
+    if (!confirmPassword.trim()) { setError('현재 비밀번호를 입력해 주세요.'); return; }
     setSaving(true);
     try {
-      await updateProfile({ nickname: nickname.trim() }, '');
+      await updateProfile({ nickname: nickname.trim() }, confirmPassword);
       navigate('/profile');
     } catch (e: any) {
       setError(e.message || '저장에 실패했습니다.');
@@ -162,6 +165,27 @@ export function ProfileEditScreen() {
                 className="w-full px-4 py-3 rounded-[12px] text-[14px] outline-none text-text-sub"
                 style={{ background: '#f0f0f0', border: '1.5px solid #e5e7eb' }}
               />
+            </div>
+            <div>
+              <label className="text-[13px] text-text-sub block mb-1.5">현재 비밀번호 (저장 시 필요)</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="현재 비밀번호 입력"
+                  className="w-full px-4 py-3 rounded-[12px] text-[14px] outline-none text-text-main pr-11"
+                  style={{ background: '#f8f9ff', border: '1.5px solid #e5e7eb' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-0 text-text-sub p-0"
+                  aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+                >
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
             </div>
           </div>
 

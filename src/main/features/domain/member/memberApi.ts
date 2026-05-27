@@ -308,7 +308,7 @@ export const memberApi = {
   }): Promise<{ email: string; nickname: string }> => {
     const res = await apiFetch<{ email: string; nickname: string }>('/members/me', {
       method: 'PATCH',
-      body:   JSON.stringify(params),
+      body:   JSON.stringify({ updateProfileList: [], ...params }),
     }, API_URL);
     return res.result!;
   },

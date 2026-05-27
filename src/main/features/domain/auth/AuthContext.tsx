@@ -14,6 +14,7 @@ interface AuthContextValue {
   updateUser:      (data: Partial<Member>) => Promise<void>;
   updateProfile:   (params: { nickname?: string; email?: string }, confirmPassword: string) => Promise<void>;
   deleteAccount:   () => Promise<void>;
+  refreshUser:     () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -97,6 +98,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
   }, [currentUser]);
 
+  // ─── 서버에서 최신 프로필 재조회 (코인 등 갱신용) ──────────────────────────
+  const refreshUser = useCallback(async () => {
+    if (!currentUser) return;
+    try {
+      const member = await authApi.getMyProfile(currentUser.profileUrl);
+      setCurrentUser(member);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(member));
+    } catch { /* 실패 시 기존 상태 유지 */ }
+  }, [currentUser]);
+
   // ─── 회원 탈퇴 (백엔드 미제공 엔드포인트 → 로컬 처리) ─────────────────────
   const deleteAccount = useCallback(async () => {
     if (!currentUser) return;
@@ -107,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [currentUser]);
 
   return (
-    <AuthContext.Provider value={{ currentUser, isLoading, login, logout, register, updateUser, updateProfile, deleteAccount }}>
+    <AuthContext.Provider value={{ currentUser, isLoading, login, logout, register, updateUser, updateProfile, deleteAccount, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

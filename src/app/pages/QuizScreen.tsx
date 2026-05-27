@@ -6,6 +6,7 @@ import { quizApi } from '../../main/features/domain/voca/vocaApi';
 import type { ChoiceQuestion } from '../../main/features/domain/voca/vocaApi';
 import { storeApi } from '../../main/features/domain/store/storeApi';
 import type { MyItemInfo } from '../../main/features/domain/store/storeApi';
+import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { MobileLayout } from '../components/MobileLayout';
 
 const INIT_SECONDS = 10;
@@ -44,6 +45,7 @@ function getCardStyle(state: CardState): React.CSSProperties {
 export function QuizScreen() {
   const { choiceId } = useParams<{ choiceId: string }>();
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [question, setQuestion] = useState<ChoiceQuestion | null>(null);
@@ -129,6 +131,11 @@ export function QuizScreen() {
   useEffect(() => {
     if (timer === 0 && !answered && phase === 'quiz') handlePick(null);
   }, [timer, answered, phase]);
+
+  // 퀴즈 완료 시 코인 잔액 갱신
+  useEffect(() => {
+    if (phase === 'result') void refreshUser();
+  }, [phase]);
 
   const handlePick = async (optionId: number | null) => {
     if (answered || !question || !choiceId) return;
