@@ -8,7 +8,7 @@ const GREETINGS = ['안녕하세요', '반갑습니다', '오늘도 화이팅'];
 
 export function HomeScreen() {
   const { currentUser } = useAuth();
-  const { progress } = useProgress();
+  const { progress, dailyLearnedCount, dailyTestedCount } = useProgress();
   const navigate = useNavigate();
 
   const greeting = GREETINGS[new Date().getHours() % GREETINGS.length];
@@ -115,8 +115,8 @@ export function HomeScreen() {
             <h3 className="text-[15px] font-bold text-text-main">오늘의 학습 목표</h3>
           </div>
           {[
-            { label: '단어 암기하기', done: totalLearned >= 10, count: `${Math.min(totalLearned, 10)}/10` },
-            { label: '테스트 완료하기', done: totalTested >= 1, count: `${Math.min(totalTested, 1)}/1` },
+            { label: '단어 암기하기', done: dailyLearnedCount >= 10, count: `${Math.min(dailyLearnedCount, 10)}/10` },
+            { label: '테스트 완료하기', done: dailyTestedCount >= 1, count: `${Math.min(dailyTestedCount, 1)}/1` },
           ].map((goal) => (
             <div key={goal.label} className="flex items-center gap-3 py-2">
               <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center flex-shrink-0 ${goal.done ? 'bg-brand-blue' : 'bg-surface-muted'}`}>

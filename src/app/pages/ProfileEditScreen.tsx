@@ -7,27 +7,13 @@ import { imageApi } from '../../main/features/domain/member/imageApi';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { MobileLayout } from '../components/MobileLayout';
 
-// ─── 프로필 배경 색상 옵션 ────────────────────────────────────────────────────
-const BG_COLORS = [
-  { key: 'sky',    label: '하늘 블루',  hex: '#B8D0FA' },
-  { key: 'deep',   label: '딥 블루',   hex: '#4B7BEC' },
-  { key: 'olive',  label: '올리브 그린', hex: '#8A9A5B' },
-  { key: 'cream',  label: '크림 옐로우', hex: '#D4C49A' },
-  { key: 'peach',  label: '피치 오렌지', hex: '#F4A07A' },
-  { key: 'purple', label: '퓨플 그레이', hex: '#7E6C8A' },
-  { key: 'dark',   label: '다크 블랙',  hex: '#2C2C2C' },
-  { key: 'mint',   label: '민트 그린',  hex: '#26C485' },
-];
-
-// ─── 프로필 프레임 옵션 ───────────────────────────────────────────────────────
+// ─── 프로필 프레임 옵션 (추후 상점 연동 예정) ────────────────────────────────
 const FRAMES = [
   { key: 'gold',   label: '골드 크라운', emoji: '🏅' },
   { key: 'blue',   label: '골 블루',    emoji: '💎' },
   { key: 'neon',   label: '네온',       emoji: '⚡' },
   { key: 'flower', label: '플라워',     emoji: '🌸' },
 ];
-
-const BG_COLOR_KEY = 'profile_bg_color';
 
 export function ProfileEditScreen() {
   const navigate = useNavigate();
@@ -40,17 +26,15 @@ export function ProfileEditScreen() {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [photoUploading,    setPhotoUploading]    = useState(false);
   const [previewUrl,        setPreviewUrl]        = useState<string | null>(null);
-  const [selectedBg,        setSelectedBg]        = useState<string>(
-    () => localStorage.getItem(BG_COLOR_KEY) ?? 'sky',
-  );
 
   if (!currentUser) return null;
+
+  // ─── 핸들러 ──────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
     setError('');
     if (!nickname.trim()) { setError('닉네임을 입력해 주세요.'); return; }
     setSaving(true);
-    localStorage.setItem(BG_COLOR_KEY, selectedBg);
     try {
       await updateProfile({ nickname: nickname.trim() }, '');
       navigate('/profile');
@@ -138,7 +122,6 @@ export function ProfileEditScreen() {
                   className="w-full h-full object-cover"
                 />
               </button>
-              {/* 카메라 뱃지 */}
               <button
                 type="button"
                 onClick={handlePhotoClick}
@@ -179,48 +162,6 @@ export function ProfileEditScreen() {
                 className="w-full px-4 py-3 rounded-[12px] text-[14px] outline-none text-text-sub"
                 style={{ background: '#f0f0f0', border: '1.5px solid #e5e7eb' }}
               />
-            </div>
-          </div>
-
-          {/* 프로필 배경 색상 */}
-          <div
-            className="rounded-2xl px-4 py-4 bg-white"
-            style={{ border: '1px solid #f0f0f0', boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}
-          >
-            <p className="text-[13px] font-semibold text-text-main mb-3">🎨 프로필 배경 색상</p>
-            <div className="grid grid-cols-4 gap-3">
-              {BG_COLORS.map((c) => (
-                <button
-                  key={c.key}
-                  type="button"
-                  onClick={() => setSelectedBg(c.key)}
-                  className="flex flex-col items-center gap-1.5"
-                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                >
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center"
-                    style={{
-                      background: c.hex,
-                      boxShadow: selectedBg === c.key
-                        ? `0 0 0 3px #fff, 0 0 0 5px ${c.hex}`
-                        : '0 1px 3px rgba(0,0,0,0.12)',
-                    }}
-                  >
-                    {selectedBg === c.key && (
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                        <path
-                          d="M4 9l4 4 6-7"
-                          stroke="#fff"
-                          strokeWidth="2.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-text-sub text-center leading-tight">{c.label}</span>
-                </button>
-              ))}
             </div>
           </div>
 

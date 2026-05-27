@@ -5,6 +5,37 @@ import { useAuth } from '../../main/features/domain/auth/AuthContext';
 import { storeApi } from '../../main/features/domain/store/storeApi';
 import type { StoreItemInfo } from '../../main/features/domain/store/storeApi';
 import type { ItemType } from '../../main/item/types';
+import { mockLocalStore } from '../../main/features/domain/store/mockLocalStore';
+
+// ─── SVG 아이콘 imports ──────────────────────────────────────────────────────
+import imgStreakProtect from '../assets/items_SP_StreakProtect.svg';
+import imgFeed          from '../assets/items_FD_Feed.svg';
+import imgWater         from '../assets/items_WT_Water.svg';
+import imgBonusTime     from '../assets/items_MT_BonusTime.svg';
+import imgBG07          from '../assets/BG_BG07_Leaf.svg';
+import imgBG08          from '../assets/BG_BG08_Mountains.svg';
+import imgBG09          from '../assets/BG_BG09_rural.svg';
+import imgBG10          from '../assets/BG_BG10_urban.svg';
+import imgNK01          from '../assets/clothes_NK01_muffler.svg';
+import imgNK02          from '../assets/clothes_NK02_pendant.svg';
+import imgNK03          from '../assets/clothes_NK03_Chain.svg';
+import imgHD01          from '../assets/clothes_HD01_Hairband.svg';
+import petEggImg        from '../assets/pet_PE_Egg_1.png';
+
+// ─── 개발 테스트 모드 (true = 가격 0 표시 + 코인 체크 우회) ───────────────────
+const TEST_MODE = false;
+
+// ─── 배경 / 악세사리 인덱스 매핑 ─────────────────────────────────────────────
+const PET_BG_SHOP_IMAGES  = [imgBG07, imgBG08, imgBG09, imgBG10];
+const PET_ACC_SHOP_IMAGES = [imgNK01, imgNK02, imgNK03, imgHD01];
+
+// ─── 백엔드에 없을 때 프론트에서 임시 제공하는 목 악세사리 ───────────────────────
+const MOCK_ACC_ITEMS: StoreItemInfo[] = [
+  { itemId: -1, name: '목도리',   price: 0, itemType: 'PET_ACCESSORY' },
+  { itemId: -2, name: '펜던트',   price: 0, itemType: 'PET_ACCESSORY' },
+  { itemId: -3, name: '체인',     price: 0, itemType: 'PET_ACCESSORY' },
+  { itemId: -4, name: '헤어밴드', price: 0, itemType: 'PET_ACCESSORY' },
+];
 
 // ─── 카테고리 메타 ─────────────────────────────────────────────────────────────
 
@@ -17,27 +48,26 @@ type Category =
   | 'profile_bg'
   | 'minigame';
 
-const ITEM_META: Record<ItemType, { emoji: string; category: Category; description: string }> = {
-  STREAK_FREEZE:         { emoji: '⚡', category: 'streak',        description: '하루 건너뛰어도 연속 기록 유지' },
-  PET_FOOD:              { emoji: '🍖', category: 'pet_grow',      description: '애완동물 배고픔을 줄여줘요' },
-  PET_WATER:             { emoji: '💧', category: 'pet_grow',      description: '애완동물 목마름을 줄여줘요' },
-  CHOICE_TIME_10:        { emoji: '⏱️', category: 'minigame',      description: '사지선다 시간 +10초' },
-  CHOICE_TIME_30:        { emoji: '⏱️', category: 'minigame',      description: '사지선다 시간 +30초' },
-  CROSSWORD_HINT_START:  { emoji: '🔍', category: 'minigame',      description: '십자말풀이 시작 스펠링 힌트' },
-  CROSSWORD_HINT_MIDDLE: { emoji: '🔍', category: 'minigame',      description: '십자말풀이 중간 스펠링 힌트' },
-  PET_BG:                { emoji: '🌿', category: 'pet_bg',        description: '펫 화면 배경 이미지' },
-  PET_ACCESSORY:         { emoji: '🎀', category: 'pet_accessory', description: '애완동물 치장 아이템' },
-  PROFILE_PHOTO:         { emoji: '🖼️', category: 'profile_frame', description: '프로필 테두리 프레임' },
-  PROFILE_BG:            { emoji: '🌌', category: 'profile_bg',    description: '프로필 배경 이미지' },
+const ITEM_META: Record<ItemType, { img?: string; emoji: string; category: Category; description: string }> = {
+  STREAK_FREEZE:         { img: imgStreakProtect, emoji: '⚡', category: 'streak',        description: '하루 건너뛰어도 연속 기록 유지' },
+  PET_FOOD:              { img: imgFeed,          emoji: '🍖', category: 'pet_grow',      description: '애완동물 배고픔을 줄여줘요' },
+  PET_WATER:             { img: imgWater,         emoji: '💧', category: 'pet_grow',      description: '애완동물 목마름을 줄여줘요' },
+  CHOICE_TIME_10:        { img: imgBonusTime,     emoji: '⏱️', category: 'minigame',      description: '사지선다 시간 +10초' },
+  CHOICE_TIME_30:        { img: imgBonusTime,     emoji: '⏱️', category: 'minigame',      description: '사지선다 시간 +30초' },
+  CROSSWORD_HINT_START:  {                        emoji: '🔍', category: 'minigame',      description: '십자말풀이 시작 스펠링 힌트' },
+  CROSSWORD_HINT_MIDDLE: {                        emoji: '🔍', category: 'minigame',      description: '십자말풀이 중간 스펠링 힌트' },
+  PET_BG:                {                        emoji: '🌿', category: 'pet_bg',        description: '펫 화면 배경 이미지' },
+  PET_ACCESSORY:         {                        emoji: '🎀', category: 'pet_accessory', description: '애완동물 치장 아이템' },
+  PROFILE_PHOTO:         {                        emoji: '🖼️', category: 'profile_frame', description: '프로필 테두리 프레임' },
+  PROFILE_BG:            {                        emoji: '🌌', category: 'profile_bg',    description: '프로필 배경 이미지' },
 };
 
 const SECTIONS: { category: Category; emoji: string; label: string }[] = [
   { category: 'streak',        emoji: '🔥', label: '연속학습 파괴' },
   { category: 'pet_grow',      emoji: '🐣', label: '애완동물 성장' },
   { category: 'pet_bg',        emoji: '🌿', label: '펫 배경' },
-  { category: 'pet_accessory', emoji: '🎀', label: '펫 치장' },
+  { category: 'pet_accessory', emoji: '🎀', label: '펫 악세사리' },
   { category: 'profile_frame', emoji: '🖼️', label: '프로필 테두리' },
-  { category: 'profile_bg',    emoji: '🌌', label: '프로필 배경' },
   { category: 'minigame',      emoji: '🎮', label: '미니게임' },
 ];
 
@@ -45,6 +75,8 @@ const SECTIONS: { category: Category; emoji: string; label: string }[] = [
 
 interface DisplayItem extends StoreItemInfo {
   ownedCount: number;
+  imgSrc?:    string;
+  isMock?:    boolean; // 백엔드 없는 로컬 목 아이템
 }
 
 // ─── 서브 컴포넌트 ─────────────────────────────────────────────────────────────
@@ -80,6 +112,8 @@ function ItemCard({
   buying: boolean;
 }) {
   const meta = ITEM_META[item.itemType];
+  const displayPrice = TEST_MODE ? 0 : item.price;
+
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
@@ -88,22 +122,45 @@ function ItemCard({
       style={{ border: '1px solid #F8EDD6', boxShadow: '0 1px 6px rgba(0,0,0,0.05)', opacity: buying ? 0.7 : 1 }}
     >
       {item.ownedCount > 0 && <OwnedBadge count={item.ownedCount} />}
+
+      {/* 아이템 이미지 */}
       <div
-        className="flex items-center justify-center rounded-xl mb-2"
-        style={{ width: 54, height: 54, background: '#F8F4E8', fontSize: 28 }}
+        className="flex items-center justify-center rounded-xl mb-2 overflow-hidden"
+        style={{ width: 54, height: 54, background: '#F8F4E8', position: 'relative' }}
       >
-        {meta.emoji}
+        {item.itemType === 'PET_ACCESSORY' && item.imgSrc ? (
+          /* 악세사리: 펫 에그 위에 오버레이 */
+          <>
+            <img src={petEggImg} alt="펫" style={{ width: 54, height: 54, objectFit: 'contain' }} />
+            <img
+              src={item.imgSrc} alt={item.name}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          </>
+        ) : item.imgSrc ? (
+          <img src={item.imgSrc} alt={item.name} style={{ width: 54, height: 54, objectFit: 'contain' }} />
+        ) : (
+          <span style={{ fontSize: 28 }}>{meta.emoji}</span>
+        )}
       </div>
+
       <p className="text-[12px] font-bold text-text-main text-center mb-0.5">{item.name}</p>
       <p className="text-[10px] text-text-sub text-center mb-2 leading-[1.4]">{meta.description}</p>
+
       <div
         className="flex items-center gap-1 w-full justify-center rounded-xl py-1.5"
         style={{ background: '#FFF8E1', border: '1px solid #FFE082' }}
       >
-        <span style={{ fontSize: 12 }}>🪙</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#B8860B' }}>
-          {item.price.toLocaleString()}
-        </span>
+        {displayPrice === 0 ? (
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#2e7d32' }}>무료</span>
+        ) : (
+          <>
+            <span style={{ fontSize: 12 }}>🪙</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#B8860B' }}>
+              {displayPrice.toLocaleString()}
+            </span>
+          </>
+        )}
       </div>
     </motion.div>
   );
@@ -119,6 +176,8 @@ function StreakItemCard({
   buying: boolean;
 }) {
   const meta = ITEM_META[item.itemType];
+  const displayPrice = TEST_MODE ? 0 : item.price;
+
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
@@ -128,10 +187,13 @@ function StreakItemCard({
     >
       {item.ownedCount > 0 && <OwnedBadge count={item.ownedCount} />}
       <div
-        className="flex items-center justify-center rounded-2xl flex-shrink-0"
-        style={{ width: 64, height: 64, background: '#FFF3CD', fontSize: 34 }}
+        className="flex items-center justify-center rounded-2xl flex-shrink-0 overflow-hidden"
+        style={{ width: 64, height: 64, background: '#FFF3CD' }}
       >
-        {meta.emoji}
+        {item.imgSrc
+          ? <img src={item.imgSrc} alt={item.name} style={{ width: 64, height: 64, objectFit: 'contain' }} />
+          : <span style={{ fontSize: 34 }}>{meta.emoji}</span>
+        }
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[15px] font-bold text-text-main mb-1">{item.name}</p>
@@ -140,10 +202,16 @@ function StreakItemCard({
           className="inline-flex items-center gap-1 rounded-xl px-3 py-1"
           style={{ background: '#FFF8E1', border: '1px solid #FFE082' }}
         >
-          <span style={{ fontSize: 13 }}>🪙</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#B8860B' }}>
-            {item.price.toLocaleString()}
-          </span>
+          {displayPrice === 0 ? (
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#2e7d32' }}>무료</span>
+          ) : (
+            <>
+              <span style={{ fontSize: 13 }}>🪙</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#B8860B' }}>
+                {displayPrice.toLocaleString()}
+              </span>
+            </>
+          )}
         </div>
       </div>
     </motion.div>
@@ -171,14 +239,41 @@ export function ShopScreen() {
         countMap.set(mi.item.itemId, mi.count);
       }
 
-      setItems(
-        (itemList.items ?? [])
-          .filter(item => item.price > 0)   // 기본(무료) 아이템은 상점에 표시하지 않음
-          .map(item => ({
-            ...item,
-            ownedCount: countMap.get(item.itemId) ?? 0,
-          }))
-      );
+      const paidItems = (itemList.items ?? []).filter(item => item.price > 0);
+
+      // 인덱스 매핑용: 유료 아이템 중 PET_BG, PET_ACCESSORY 순서
+      const bgOrder  = paidItems.filter(i => i.itemType === 'PET_BG');
+      const accOrder = paidItems.filter(i => i.itemType === 'PET_ACCESSORY');
+
+      const displayItems: DisplayItem[] = paidItems.map(item => {
+        const meta = ITEM_META[item.itemType];
+        let imgSrc: string | undefined = meta?.img;
+
+        if (item.itemType === 'PET_BG') {
+          const idx = bgOrder.findIndex(i => i.itemId === item.itemId);
+          imgSrc = PET_BG_SHOP_IMAGES[idx];
+        } else if (item.itemType === 'PET_ACCESSORY') {
+          const idx = accOrder.findIndex(i => i.itemId === item.itemId);
+          imgSrc = PET_ACC_SHOP_IMAGES[idx];
+        }
+
+        return { ...item, ownedCount: countMap.get(item.itemId) ?? 0, imgSrc };
+      });
+
+      // ── 백엔드에 PET_ACCESSORY 아이템이 없으면 목 아이템 주입 ──────────────────
+      if (accOrder.length === 0) {
+        const ownedMockIds = new Set(mockLocalStore.getOwnedAccIds());
+        MOCK_ACC_ITEMS.forEach((mockItem, i) => {
+          displayItems.push({
+            ...mockItem,
+            ownedCount: ownedMockIds.has(mockItem.itemId) ? 1 : 0,
+            imgSrc:     PET_ACC_SHOP_IMAGES[i],
+            isMock:     true,
+          });
+        });
+      }
+
+      setItems(displayItems);
     } catch {
       setError(true);
     } finally {
@@ -190,10 +285,23 @@ export function ShopScreen() {
 
   const handleBuy = async (item: DisplayItem) => {
     if (buying) return;
-    if (!currentUser || currentUser.coin < item.price) {
+
+    // 테스트 모드가 아닐 때만 코인 체크
+    if (!TEST_MODE && (!currentUser || currentUser.coin < item.price)) {
       alert('코인이 부족해요!');
       return;
     }
+
+    // ── 목(로컬) 아이템 구매 처리 ──────────────────────────────────────────────
+    if (item.isMock) {
+      mockLocalStore.purchaseAcc(item.itemId);
+      setItems(prev =>
+        prev.map(i => i.itemId === item.itemId ? { ...i, ownedCount: i.ownedCount + 1 } : i)
+      );
+      return;
+    }
+
+    // ── 실제 백엔드 구매 ────────────────────────────────────────────────────────
     setBuying(true);
     try {
       const result = await storeApi.purchaseItem(item.itemId);
@@ -229,6 +337,11 @@ export function ShopScreen() {
           )}
         </div>
         <p className="text-[13px] text-text-sub mt-1">학습 포인트로 특별한 아이템을 구매하세요</p>
+        {TEST_MODE && (
+          <p className="text-[11px] mt-1 font-semibold" style={{ color: '#e65100' }}>
+            🛠 테스트 모드 — 가격 무시, 구매 자유
+          </p>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-6">
