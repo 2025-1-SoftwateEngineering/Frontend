@@ -15,7 +15,7 @@ const app = initializeApp(firebaseConfig);
 export const messaging = getMessaging(app);
 
 // VAPID 키는 Firebase 콘솔 → 프로젝트 설정 → 클라우드 메시징 → 웹 푸시 인증서에서 확인
-const VAPID_KEY = '';
+const VAPID_KEY = 'BD4XHbKFrKEE1vHyM-Km6me5S2Qip2Wb7WBKoVX8vbwaFIO2RQCToq_YEB6xaupxmce-YUAprDgYh1vrD_fa9P0';
 
 export async function requestNotificationPermission(): Promise<string | null> {
   try {

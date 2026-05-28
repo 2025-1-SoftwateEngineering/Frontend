@@ -20,7 +20,7 @@ import imgNK01          from '../assets/clothes_NK01_muffler.svg';
 import imgNK02          from '../assets/clothes_NK02_pendant.svg';
 import imgNK03          from '../assets/clothes_NK03_Chain.svg';
 import imgHD01          from '../assets/clothes_HD01_Hairband.svg';
-import petEggImg        from '../assets/pet_PE_Egg_1.png';
+
 
 // ─── 개발 테스트 모드 (true = 가격 0 표시 + 코인 체크 우회) ───────────────────
 const TEST_MODE = false;
@@ -128,16 +128,7 @@ function ItemCard({
         className="flex items-center justify-center rounded-xl mb-2 overflow-hidden"
         style={{ width: 54, height: 54, background: '#F8F4E8', position: 'relative' }}
       >
-        {item.itemType === 'PET_ACCESSORY' && item.imgSrc ? (
-          /* 악세사리: 펫 에그 위에 오버레이 */
-          <>
-            <img src={petEggImg} alt="펫" style={{ width: 54, height: 54, objectFit: 'contain' }} />
-            <img
-              src={item.imgSrc} alt={item.name}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-            />
-          </>
-        ) : item.imgSrc ? (
+        {item.imgSrc ? (
           <img src={item.imgSrc} alt={item.name} style={{ width: 54, height: 54, objectFit: 'contain' }} />
         ) : (
           <span style={{ fontSize: 28 }}>{meta.emoji}</span>

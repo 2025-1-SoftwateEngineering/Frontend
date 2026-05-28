@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ChevronLeft, Edit2, Brain, ClipboardCheck, Gamepad2 } from 'lucide-react';
+import { ChevronLeft, Edit2, Brain, ClipboardCheck, Gamepad2, Trash2 } from 'lucide-react';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 function parseVocaDesc(desc?: string) {
   const parts = (desc ?? '').split('|||');
@@ -24,7 +25,36 @@ export function VocabularyBookScreen() {
   const [book, setBook] = useState<VocaBook | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
+  const [confirmDeleteBook, setConfirmDeleteBook] = useState(false);
+  const [deleteWordTarget, setDeleteWordTarget] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState('');
   const isAdmin = currentUser?.authorize === 'ROLE_ADMIN';
+
+  const handleDeleteBook = async () => {
+    if (!book) return;
+    try {
+      await vocaApi.deleteBook(book.voca_id);
+      navigate('/vocabulary', { replace: true });
+    } catch (e: any) {
+      setConfirmDeleteBook(false);
+      setDeleteError(e.message || '삭제에 실패했습니다.');
+    }
+  };
+
+  const handleDeleteWord = async () => {
+    if (deleteWordTarget === null || !book) return;
+    try {
+      await vocaApi.deleteWord(deleteWordTarget);
+      const updated = { ...book, words: book.words.filter((w) => w.word_id !== deleteWordTarget) };
+      setBook(updated);
+      const newTotalPages = Math.ceil(updated.words.length / PAGE_SIZE);
+      if (page >= newTotalPages && newTotalPages > 0) setPage(newTotalPages - 1);
+      setDeleteWordTarget(null);
+    } catch (e: any) {
+      setDeleteWordTarget(null);
+      setDeleteError(e.message || '단어 삭제에 실패했습니다.');
+    }
+  };
 
   useEffect(() => {
     if (!bookId) return;
@@ -76,13 +106,22 @@ export function VocabularyBookScreen() {
               </p>
             </div>
             {isAdmin && (
-              <button
-                onClick={() => navigate(`/vocabulary/${book.voca_id}/edit`)}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-brand-yellow text-text-main text-[13px] font-semibold"
-              >
-                <Edit2 size={14} />
-                편집
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate(`/vocabulary/${book.voca_id}/edit`)}
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl bg-brand-yellow text-text-main text-[13px] font-semibold"
+                >
+                  <Edit2 size={14} />
+                  편집
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteBook(true)}
+                  className="flex items-center justify-center w-9 h-9 rounded-xl bg-transparent border-0 text-destructive cursor-pointer active:scale-95 transition-transform"
+                  aria-label="단어장 삭제"
+                >
+                  <Trash2 size={17} />
+                </button>
+              </div>
             )}
           </div>
           <div className="bg-surface-lighter rounded-full h-1.5 overflow-hidden">
@@ -92,6 +131,19 @@ export function VocabularyBookScreen() {
             />
           </div>
         </div>
+
+        {/* 삭제 오류 */}
+        {deleteError && (
+          <div className="flex-shrink-0 px-4 pt-2">
+            <p
+              className="text-[13px] text-center rounded-xl py-2 px-3"
+              style={{ color: '#d4183d', background: '#fef2f2' }}
+              onClick={() => setDeleteError('')}
+            >
+              {deleteError}
+            </p>
+          </div>
+        )}
 
         {/* Word list */}
         <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -129,6 +181,15 @@ export function VocabularyBookScreen() {
                     </div>
                     <p className="text-sm text-text-sub mt-0.5">{word.meaning}</p>
                   </div>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setDeleteWordTarget(word.word_id)}
+                      className="flex items-center justify-center w-8 h-8 rounded-xl bg-transparent border-0 text-destructive cursor-pointer active:scale-95 transition-transform ml-2 flex-shrink-0"
+                      aria-label="단어 삭제"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -162,6 +223,27 @@ export function VocabularyBookScreen() {
           </button>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmDeleteBook}
+        title="단어장을 삭제하시겠습니까?"
+        message="삭제하면 단어장과 모든 단어가 영구적으로 제거됩니다."
+        confirmLabel="삭제"
+        cancelLabel="취소"
+        confirmColor="#d4183d"
+        onConfirm={handleDeleteBook}
+        onCancel={() => setConfirmDeleteBook(false)}
+      />
+      <ConfirmModal
+        isOpen={deleteWordTarget !== null}
+        title="단어를 삭제하시겠습니까?"
+        message="삭제된 단어는 복구할 수 없습니다."
+        confirmLabel="삭제"
+        cancelLabel="취소"
+        confirmColor="#d4183d"
+        onConfirm={handleDeleteWord}
+        onCancel={() => setDeleteWordTarget(null)}
+      />
     </MobileLayout>
   );
 }

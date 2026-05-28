@@ -82,7 +82,7 @@ export function CrosswordScreen() {
       for (let k = 0; k < elem.wordLength; k++) {
         const row = elem.clueType === 'DOWN'   ? elem.verticalStartPoint + k   : elem.verticalStartPoint;
         const col = elem.clueType === 'ACROSS' ? elem.horizontalStartPoint + k : elem.horizontalStartPoint;
-        if (row < N && col < N) {
+        if (row >= 0 && col >= 0 && row < N && col < N) {
           cells[row][col].active = true;
           if (answer[k]) {
             cells[row][col].letter = answer[k].toUpperCase();
@@ -101,7 +101,7 @@ export function CrosswordScreen() {
         for (let k = 0; k < sel.wordLength; k++) {
           const row = sel.clueType === 'DOWN'   ? sel.verticalStartPoint + k   : sel.verticalStartPoint;
           const col = sel.clueType === 'ACROSS' ? sel.horizontalStartPoint + k : sel.horizontalStartPoint;
-          if (row < N && col < N) cells[row][col].highlighted = true;
+          if (row >= 0 && col >= 0 && row < N && col < N) cells[row][col].highlighted = true;
         }
       }
     }

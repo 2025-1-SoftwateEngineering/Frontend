@@ -78,7 +78,7 @@ export function CrosswordCreateScreen() {
         entries.map(e => ({
           clueType:        e.clueType,
           clueDescription: e.clueDescription.trim(),
-          wordStartPoint:  `${e.row.trim()},${e.col.trim()}`,
+          wordStartPoint:  `${Number(e.row.trim()) + 1} ${Number(e.col.trim()) + 1}`,
           word:            e.word.trim().toLowerCase(),
         })),
       );

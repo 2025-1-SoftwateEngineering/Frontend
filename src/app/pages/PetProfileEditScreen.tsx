@@ -7,6 +7,11 @@ import bgLeaf       from '../assets/BG_BG07_Leaf.svg';
 import bgMountains  from '../assets/BG_BG08_Mountains.svg';
 import bgRural      from '../assets/BG_BG09_rural.svg';
 import bgUrban      from '../assets/BG_BG10_urban.svg';
+// 미리보기 전용 PNG (썸네일은 위 SVG 유지)
+import bgLeafPng      from '../assets/BG_BG07_Leaf_1.png';
+import bgMountainsPng from '../assets/BG_BG08_Mountains_1.png';
+import bgRuralPng     from '../assets/BG_BG09_rural_1.png';
+import bgUrbanPng     from '../assets/BG_BG10_urban_1.png';
 import accMuffler        from '../assets/clothes_NK01_muffler.svg';
 import accPendant        from '../assets/clothes_NK02_pendant.svg';
 import accChain          from '../assets/clothes_NK03_Chain.svg';
@@ -41,8 +46,9 @@ const PET_ACC_IMAGES = [
   { src: accHairband, label: '헤어밴드' },
 ];
 
-/** PetScreen 실제 렌더링용 PNG (인덱스가 PET_ACC_IMAGES와 1:1 대응) */
+/** 미리보기 전용 PNG (인덱스가 PET_ACC_IMAGES / PET_BG_IMAGES와 1:1 대응) */
 const PET_ACC_PNG = [accMufflerPng, accPendantPng, accChainPng, accHairbandPng];
+const PET_BG_PNG  = [bgLeafPng, bgMountainsPng, bgRuralPng, bgUrbanPng];
 
 /** 기본 배경 / 악세사리 없음 센티넬 (실제 itemId는 0이 없음) */
 const DEFAULT_BG_ID  = 0;
@@ -290,8 +296,8 @@ export function PetProfileEditScreen() {
   // ─── 미리보기 ──────────────────────────────────────────────────────────────
   const previewBgImg = (() => {
     if (selectedBgId === DEFAULT_BG_ID) return bgDefault;
-    const found = bgItems.find(b => b.itemId === selectedBgId);
-    if (found?.img) return found.img;
+    const idx = bgItems.findIndex(b => b.itemId === selectedBgId);
+    if (idx >= 0 && PET_BG_PNG[idx]) return PET_BG_PNG[idx]!;
     if (selectedBgId === petInfo?.activeBackgroundItemId && petInfo?.activeBackgroundUrl)
       return petInfo.activeBackgroundUrl;
     return bgDefault;
@@ -299,8 +305,8 @@ export function PetProfileEditScreen() {
 
   const previewAccImg = (() => {
     if (selectedAccId === DEFAULT_ACC_ID) return null;
-    const found = accItems.find(a => a.itemId === selectedAccId);
-    if (found?.img) return found.img;
+    const idx = accItems.findIndex(a => a.itemId === selectedAccId);
+    if (idx >= 0 && PET_ACC_PNG[idx]) return PET_ACC_PNG[idx]!;
     if (selectedAccId === petInfo?.activeAccessoryItemId && petInfo?.activeAccessoryUrl)
       return petInfo.activeAccessoryUrl;
     return null;
